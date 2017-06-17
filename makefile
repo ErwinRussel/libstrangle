@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-rdynamic -fPIC -shared -Wall -std=c99 -fvisibility=hidden -DHOOK_DLSYM
 LDFLAGS=-Wl,-z,relro,-z,now
-LDLIBS=-ldl
+LDLIBS=-ldl -lrt
 prefix=/usr/local
 bindir=$(prefix)/bin
 libdir=$(prefix)/lib
