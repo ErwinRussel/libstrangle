@@ -31,6 +31,8 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <ctype.h>
 
+#include <stdio.h>
+
 static long targetFrameTime = -1;
 static int *vsync = NULL;
 static bool *glfinish = NULL;
@@ -201,4 +203,16 @@ void glFinish( void ) {
 	void (*realFunction)( void )
 	= real_dlsym( RTLD_NEXT, "glFinish" );
 	realFunction();
+}
+
+
+void *strangle_requireFunction( const char * name ) {
+	void (*func)() = real_dlsym( RTLD_NEXT, name );
+
+	if (func == NULL) {
+		printf( "Strangle: Failed to get function %s\n", name );
+		exit( 1 );
+	}
+
+	return func;
 }

@@ -29,6 +29,7 @@ void setVsync( void );
 void limiter( void );
 void strToLower( char *str );
 char *getenv_array( int count, const char **names );
+void *strangle_requireFunction( const char * name );
 
 // Exported
 void *dlsym( void *handle, const char *name );

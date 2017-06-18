@@ -26,10 +26,36 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #include <dlfcn.h>
 #include <stdlib.h>
 
+void *strangle_requireGlxFunction( const char * name ) {
+	static void *(*real_glXGetProcAddress)( const GLubyte * );
+	static void *(*real_glXGetProcAddressARB)( const GLubyte * );
+	if (real_glXGetProcAddress == NULL) {
+		real_glXGetProcAddress = strangle_requireFunction( "glXGetProcAddress" );
+	}
+	if (real_glXGetProcAddressARB == NULL) {
+		real_glXGetProcAddress = strangle_requireFunction( "glXGetProcAddressARB" );
+	}
+
+	void (*func)()
+	= real_glXGetProcAddress( (const GLubyte *) name );
+
+	if (func == NULL) {
+		func = real_glXGetProcAddressARB( (const GLubyte *) name );
+	}
+
+	if (func == NULL) {
+		func = strangle_requireFunction( name );
+	}
+
+	return func;
+}
+
 EXPORTED
 void glXSwapBuffers( Display *dpy, GLXDrawable drawable ) {
-	void (*realFunction)( Display *dpy, GLXDrawable drawable )
-	= real_dlsym( RTLD_NEXT, "glXSwapBuffers" );
+	static void (*realFunction)( Display *, GLXDrawable );
+	if (realFunction == NULL) {
+		realFunction = strangle_requireGlxFunction( __func__ );
+	}
 
 	// The buffer swap is called before the wait in hope that it will reduce perceived input lag
 	realFunction( dpy, drawable );
@@ -38,53 +64,71 @@ void glXSwapBuffers( Display *dpy, GLXDrawable drawable ) {
 
 EXPORTED
 void glXSwapIntervalEXT( Display *dpy, GLXDrawable drawable, int interval ) {
-	void (*realFunction)( Display *dpy, GLXDrawable drawable, int interval )
-	= real_dlsym( RTLD_NEXT, "glXSwapIntervalEXT" );
+	static void (*realFunction)( Display *, GLXDrawable, int );
+	if (realFunction == NULL) {
+		realFunction = strangle_requireGlxFunction( __func__ );
+	}
+
 	realFunction( dpy, drawable, getInterval( interval ) );
 }
 
 EXPORTED
 int glXSwapIntervalSGI( int interval ) {
-	int (*realFunction)( int interval )
-	= real_dlsym( RTLD_NEXT, "glXSwapIntervalSGI" );
+	static int (*realFunction)( int );
+	if (realFunction == NULL) {
+		realFunction = strangle_requireGlxFunction( __func__ );
+	}
+
 	return realFunction( getInterval( interval ) );
 }
 
 EXPORTED
 int glXSwapIntervalMESA( unsigned int interval ) {
-	int (*realFunction)( int interval )
-	= real_dlsym( RTLD_NEXT, "glXSwapIntervalMESA" );
+	static int (*realFunction)( int );
+	if (realFunction == NULL) {
+		realFunction = strangle_requireGlxFunction( __func__ );
+	}
+
 	return realFunction( getInterval( interval ) );
 }
 
 EXPORTED
 void *glXGetProcAddress( const GLubyte * procName ) {
+	static void *(*realFunction)( const GLubyte * );
+	if (realFunction == NULL) {
+		realFunction = strangle_requireFunction( __func__ );
+	}
+
 	void *func = getStrangleFunc( (const char*)procName );
 	if ( func != NULL ) {
 		return func;
 	}
 
-	void *(*realFunction)( const GLubyte * procName )
-	= real_dlsym( RTLD_NEXT, "glXGetProcAddress" );
 	return realFunction( procName );
 }
 
 EXPORTED
 void *glXGetProcAddressARB( const GLubyte * procName ) {
+	static void *(*realFunction)( const GLubyte * );
+	if (realFunction == NULL) {
+		realFunction = strangle_requireFunction( __func__ );
+	}
+
 	void *func = getStrangleFunc( (const char*)procName );
 	if ( func != NULL ) {
 		return func;
 	}
 
-	void *(*realFunction)( const GLubyte * procName )
-	= real_dlsym( RTLD_NEXT, "glXGetProcAddressARB" );
 	return realFunction( procName );
 }
 
 EXPORTED
 Bool glXMakeCurrent( Display * dpy, GLXDrawable drawable, GLXContext ctx ) {
-	Bool (*realFunction)( Display * dpy, GLXDrawable drawable, GLXContext ctx )
-	= real_dlsym( RTLD_NEXT, "glXMakeCurrent" );
+	static Bool (*realFunction)( Display *, GLXDrawable, GLXContext );
+	if (realFunction == NULL) {
+		realFunction = strangle_requireGlxFunction( __func__ );
+	}
+
 	Bool ret = realFunction( dpy, drawable, ctx );
 	setVsync();
 	return ret;
