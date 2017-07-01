@@ -29,7 +29,12 @@ make
 sudo make install
 ```
 
-**Debian**, **Ubuntu** and derivates may need the `libc6-dev-i386` package.
+**Debian**, **Ubuntu** and derivates may need some or all of these packages:
+```
+libc6-dev-i386
+gcc-multilib
+ia32-libs
+```
 
 **OpenSUSE** needs these packages:
 ```
