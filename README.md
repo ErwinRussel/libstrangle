@@ -1,5 +1,5 @@
 # libstrangle
-Frame rate limiter for Linux/OpenGL.
+Frame rate limiter for Linux.
 ## Usage
 Cap the FPS (frames per second) of a chosen game by including libstrangle.so in LD_PRELOAD. The environment variable FPS needs to be set first.
 Example:
