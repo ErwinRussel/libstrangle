@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2016-2017 Björn Spindel
+Copyright (C) 2016-2018 Björn Spindel
 
 This file is part of libstrangle.
 
@@ -22,6 +22,7 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #include "libstrangle.h"
 #include "glx.h"
 #include "egl.h"
+#include "vulkan.h"
 #include "real_dlsym.h"
 
 #include <dlfcn.h>
@@ -130,11 +131,13 @@ void limiter( void ) {
 
 void *getStrangleFunc( const char *symbol ) {
     if ( !strcmp( symbol, "dlsym" ) ) {
-        return dlsym;
-	} else if ( !strcmp( symbol, "glXSwapBuffers" ) ) {
-		return (void*)glXSwapBuffers;
+		return dlsym;
+
 	} else if ( !strcmp( symbol, "eglSwapBuffers" ) ) {
 		return (void*)eglSwapBuffers;
+
+	} else if ( !strcmp( symbol, "glXSwapBuffers" ) ) {
+		return (void*)glXSwapBuffers;
 	} else if ( !strcmp( symbol, "glXGetProcAddress" ) ) {
 		return (void*)glXGetProcAddress;
 	} else if ( !strcmp( symbol, "glXGetProcAddressARB" ) ) {
@@ -147,6 +150,13 @@ void *getStrangleFunc( const char *symbol ) {
 		return (void*)glXSwapIntervalMESA;
 	} else if ( !strcmp( symbol, "glXMakeCurrent" ) ) {
 		return (void*)glXMakeCurrent;
+
+	} else if ( !strcmp( symbol, "vkQueuePresentKHR" ) ) {
+		return (void*)vkQueuePresentKHR;
+	} else if ( !strcmp( symbol, "vkGetInstanceProcAddr" ) ) {
+		return (void*)vkGetInstanceProcAddr;
+	} else if ( !strcmp( symbol, "vkGetDeviceProcAddr" ) ) {
+		return (void*)vkGetDeviceProcAddr;
 	}
 
 	return NULL;
