@@ -12,7 +12,20 @@ Examples:
 ```
 strangle 60 /path/to/game
 ```
-Vertical sync can be controlled by setting the VSYNC environment variable. 0 to turn off, 1 and higher to turn on. Higher numbers will result in lower FPS. 2 will give FPS equal to half the refresh rate, 3 to one third etc. -1 might give adaptive vsync (unconfirmed).
+### Vsync
+Vertical sync can be controlled by setting the VSYNC environment variable.
+**OpenGL**
+* -1 - Adaptive sync (unconfirmed if this actually works)
+* 0 - Force off
+* 1 - Force on
+* n - Sync to refresh rate / n.
+
+**Vulkan**
+* 0 - Force off
+* 1 - Mailbox mode. Vsync with uncapped framerate.
+* 2 - Traditional vsync with framerate capped to refresh rate.
+* 3 - Adaptive vsync with tearing at low framerates.
+
 Examples:
 ```
 VSYNC=2 strangle /path/to/game
