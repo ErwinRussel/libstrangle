@@ -14,6 +14,7 @@ strangle 60 /path/to/game
 ```
 ### Vsync
 Vertical sync can be controlled by setting the VSYNC environment variable.
+
 **OpenGL**
 * -1 - Adaptive sync (unconfirmed if this actually works)
 * 0 - Force off
