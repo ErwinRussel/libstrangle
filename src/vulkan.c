@@ -68,3 +68,18 @@ void* vkGetDeviceProcAddr( void* instance, void* pName) {
 
 	return realFunction( instance, pName );
 }
+
+EXPORTED
+void* vkCreateSwapchainKHR( void* device, VkSwapchainCreateInfoKHR* pCreateInfo, void* pAllocator, void* pSwapchain ) {
+	static void* (*realFunction)( void*, VkSwapchainCreateInfoKHR*, void*, void* );
+	if (realFunction == NULL) {
+		realFunction = strangle_requireFunction( __func__ );
+	}
+
+	int* vsync = getVsync();
+	if ( vsync != NULL ) {
+		pCreateInfo->presentMode = *vsync;
+	}
+
+	return realFunction( device, pCreateInfo, pAllocator, pSwapchain );
+}

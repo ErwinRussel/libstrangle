@@ -157,6 +157,8 @@ void *getStrangleFunc( const char *symbol ) {
 		return (void*)vkGetInstanceProcAddr;
 	} else if ( !strcmp( symbol, "vkGetDeviceProcAddr" ) ) {
 		return (void*)vkGetDeviceProcAddr;
+	} else if ( !strcmp( symbol, "vkCreateSwapchainKHR" ) ) {
+		return (void*)vkCreateSwapchainKHR;
 	}
 
 	return NULL;
@@ -173,6 +175,10 @@ void setVsync( void ) {
 	if ( vsync != NULL ) {
 		glXSwapIntervalSGI( *vsync );
 	}
+}
+
+int* getVsync( void ) {
+	return vsync;
 }
 
 char *getenv_array( int count, const char **names ) {

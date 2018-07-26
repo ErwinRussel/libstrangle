@@ -26,6 +26,7 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 void *getStrangleFunc( const char *symbol );
 int getInterval( int interval );
 void setVsync( void );
+int* getVsync( void );
 void limiter( void );
 void strToLower( char *str );
 char *getenv_array( int count, const char **names );
