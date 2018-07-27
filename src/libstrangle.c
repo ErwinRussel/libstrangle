@@ -42,7 +42,6 @@ static struct config {
 	int*       retro;
 	float*     anisotropy;
 	float*     mipLodBias;
-	nanotime_t sleepOverhead;
 } config;
 
 __attribute__ ((constructor))
@@ -80,7 +79,6 @@ void init() {
 		config.retro = strangle_strtoi( env );
 	}
 
-	config.sleepOverhead = findSleepOverhead();
 }
 
 int* strangle_strtoi( const char* str ) {
@@ -145,27 +143,9 @@ int strangle_nanosleep( nanotime_t sleepTime ) {
 	return nanosleep( &ts, NULL );
 }
 
-nanotime_t findSleepOverhead() {
-	const int runs = 100;
-	const int someNumber = 24697; // The second most random number I could find
-	nanotime_t start,
-	           elapsed,
-               r,
-               total = 0;
-
-	for (int i = 0; i < runs; ++i) {
-		r = i * someNumber + 1;
-		start = getNanoTime();
-		strangle_nanosleep( r );
-		elapsed = getElapsedTime( start );
-		total += elapsed - r;
-	}
-
-	return total / runs;
-}
-
 void limiter() {
-	static nanotime_t oldTime = 0;
+	static nanotime_t oldTime = 0,
+	                  overhead = 0;
 
 	if ( config.glfinish != NULL && *config.glfinish == true ) {
 		glFinish();
@@ -175,8 +155,13 @@ void limiter() {
 		return;
 	}
 
+	nanotime_t start = getNanoTime();
 	nanotime_t sleepTime = getSleepTime( oldTime, config.targetFrameTime );
-	strangle_nanosleep( sleepTime - config.sleepOverhead );
+	if ( sleepTime > overhead ) {
+		nanotime_t adjustedSleepTime = sleepTime - overhead;
+		strangle_nanosleep( adjustedSleepTime );
+		overhead = (getElapsedTime( start ) - adjustedSleepTime + overhead * 99) / 100;
+	}
 
 	oldTime = getNanoTime();
 }
