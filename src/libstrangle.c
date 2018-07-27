@@ -53,9 +53,9 @@ void init() {
 	config.targetFrameTime = 0;
 
 	if (( env = getenv_array( 2, (const char*[]){ "FPS", "fps" } ) )) {
-		int tmp = strtol( env, NULL, 10 );
+		double tmp = strtod( env, NULL );
 		if ( tmp ) {
-			config.targetFrameTime = 1000000000 / tmp;
+			config.targetFrameTime = 1000000000.0 / tmp;
 		}
 	}
 
