@@ -36,7 +36,7 @@ void setVsync( void );
 int* getVsync( void );
 float* getMipLodBias();
 float* getAnisotropy();
-bool getRetro();
+int* getRetro();
 void limiter( void );
 char* strToLower( const char* );
 char *getenv_array( int count, const char** );
