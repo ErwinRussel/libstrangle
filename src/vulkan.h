@@ -43,9 +43,31 @@ typedef struct VkSwapchainCreateInfoKHR {
 	void*                            oldSwapchain;
 } VkSwapchainCreateInfoKHR;
 
-void* vkQueuePresentKHR( void* queue, void* pPresentInfo);
-void* vkGetInstanceProcAddr( void* instance, void* pName);
-void* vkGetDeviceProcAddr( void* instance, void* pName);
-void* vkCreateSwapchainKHR( void* device, VkSwapchainCreateInfoKHR* pCreateInfo, void* pAllocator, void* pSwapchain );
+typedef struct VkSamplerCreateInfo {
+	int                     sType;
+	void*                   pNext;
+	uint32_t                flags;
+	int                     magFilter;
+	int                     minFilter;
+	int                     mipmapMode;
+	int                     addressModeU;
+	int                     addressModeV;
+	int                     addressModeW;
+	float                   mipLodBias;
+	uint32_t                anisotropyEnable;
+	float                   maxAnisotropy;
+	uint32_t                compareEnable;
+	int                     compareOp;
+	float                   minLod;
+	float                   maxLod;
+	int                     borderColor;
+	uint32_t                unnormalizedCoordinates;
+} VkSamplerCreateInfo;
+
+void* vkQueuePresentKHR( void*, void*);
+void* vkGetInstanceProcAddr( void*, void*);
+void* vkGetDeviceProcAddr( void*, void*);
+void* vkCreateSwapchainKHR( void*, VkSwapchainCreateInfoKHR*, void*, void* );
+void* vkCreateSampler(void*, VkSamplerCreateInfo*, void*, void*);
 
 #endif

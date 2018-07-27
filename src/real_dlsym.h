@@ -20,6 +20,6 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef REAL_DLSYM_H_
 #define REAL_DLSYM_H_
 
-void *real_dlsym( void *handle, const char *name );
+void* real_dlsym( void*, const char* );
 
 #endif

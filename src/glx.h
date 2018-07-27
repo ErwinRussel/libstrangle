@@ -22,19 +22,13 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdbool.h>
 
-typedef unsigned long GLXDrawable;
-typedef unsigned char GLubyte;
-typedef void* GLXContext;
-typedef bool Bool;
-typedef void Display;
+void glXSwapBuffers( void*, void* );
+void glXSwapIntervalEXT( void*, void*, int );
+int glXSwapIntervalSGI( int );
+int glXSwapIntervalMESA( unsigned int );
+bool glXMakeCurrent( void*, void*, void* );
 
-void glXSwapBuffers( Display *dpy, GLXDrawable drawable );
-void glXSwapIntervalEXT( Display *dpy, GLXDrawable drawable, int interval );
-int glXSwapIntervalSGI( int interval );
-int glXSwapIntervalMESA( unsigned int interval );
-Bool glXMakeCurrent( Display * dpy, GLXDrawable drawable, GLXContext ctx );
-
-void *glXGetProcAddress( const GLubyte * procName );
-void *glXGetProcAddressARB( const GLubyte * procName );
+void* glXGetProcAddress( const unsigned char* );
+void* glXGetProcAddressARB( const unsigned char* );
 
 #endif

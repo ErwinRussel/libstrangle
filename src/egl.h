@@ -20,10 +20,6 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef EGL_H_
 #define EGL_H_
 
-typedef void* EGLDisplay;
-typedef void* EGLSurface;
-typedef unsigned int EGLBoolean;
-
-EGLBoolean eglSwapBuffers( EGLDisplay display, EGLSurface surface );
+unsigned int eglSwapBuffers( void*, void* );
 
 #endif

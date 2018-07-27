@@ -26,9 +26,9 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #include <dlfcn.h>
 #include <stdlib.h>
 
-void *strangle_requireGlxFunction( const char * name ) {
-	static void *(*real_glXGetProcAddress)( const GLubyte * );
-	static void *(*real_glXGetProcAddressARB)( const GLubyte * );
+void* strangle_requireGlxFunction( const char* name ) {
+	static void *(*real_glXGetProcAddress)( const unsigned char* );
+	static void *(*real_glXGetProcAddressARB)( const unsigned char* );
 	if (real_glXGetProcAddress == NULL) {
 		real_glXGetProcAddress = strangle_requireFunction( "glXGetProcAddress" );
 	}
@@ -37,10 +37,10 @@ void *strangle_requireGlxFunction( const char * name ) {
 	}
 
 	void (*func)()
-	= real_glXGetProcAddress( (const GLubyte *) name );
+	= real_glXGetProcAddress( (const unsigned char*) name );
 
 	if (func == NULL) {
-		func = real_glXGetProcAddressARB( (const GLubyte *) name );
+		func = real_glXGetProcAddressARB( (const unsigned char*) name );
 	}
 
 	if (func == NULL) {
@@ -51,8 +51,8 @@ void *strangle_requireGlxFunction( const char * name ) {
 }
 
 EXPORTED
-void glXSwapBuffers( Display *dpy, GLXDrawable drawable ) {
-	static void (*realFunction)( Display *, GLXDrawable );
+void glXSwapBuffers( void* dpy, void* drawable ) {
+	static void (*realFunction)( void*, void* );
 	if (realFunction == NULL) {
 		realFunction = strangle_requireGlxFunction( __func__ );
 	}
@@ -63,8 +63,8 @@ void glXSwapBuffers( Display *dpy, GLXDrawable drawable ) {
 }
 
 EXPORTED
-void glXSwapIntervalEXT( Display *dpy, GLXDrawable drawable, int interval ) {
-	static void (*realFunction)( Display *, GLXDrawable, int );
+void glXSwapIntervalEXT( void* dpy, void* drawable, int interval ) {
+	static void (*realFunction)( void*, void*, int );
 	if (realFunction == NULL) {
 		realFunction = strangle_requireGlxFunction( __func__ );
 	}
@@ -93,13 +93,13 @@ int glXSwapIntervalMESA( unsigned int interval ) {
 }
 
 EXPORTED
-void *glXGetProcAddress( const GLubyte * procName ) {
-	static void *(*realFunction)( const GLubyte * );
+void* glXGetProcAddress( const unsigned char* procName ) {
+	static void* (*realFunction)( const unsigned char* );
 	if (realFunction == NULL) {
 		realFunction = strangle_requireFunction( __func__ );
 	}
 
-	void *func = getStrangleFunc( (const char*)procName );
+	void* func = getStrangleFunc( (const char*)procName );
 	if ( func != NULL ) {
 		return func;
 	}
@@ -108,13 +108,13 @@ void *glXGetProcAddress( const GLubyte * procName ) {
 }
 
 EXPORTED
-void *glXGetProcAddressARB( const GLubyte * procName ) {
-	static void *(*realFunction)( const GLubyte * );
+void* glXGetProcAddressARB( const unsigned char* procName ) {
+	static void *(*realFunction)( const unsigned char* );
 	if (realFunction == NULL) {
 		realFunction = strangle_requireFunction( __func__ );
 	}
 
-	void *func = getStrangleFunc( (const char*)procName );
+	void* func = getStrangleFunc( (const char*)procName );
 	if ( func != NULL ) {
 		return func;
 	}
@@ -123,13 +123,13 @@ void *glXGetProcAddressARB( const GLubyte * procName ) {
 }
 
 EXPORTED
-Bool glXMakeCurrent( Display * dpy, GLXDrawable drawable, GLXContext ctx ) {
-	static Bool (*realFunction)( Display *, GLXDrawable, GLXContext );
+bool glXMakeCurrent( void* dpy, void* drawable, void* ctx ) {
+	static bool (*realFunction)( void*, void*, void* );
 	if (realFunction == NULL) {
 		realFunction = strangle_requireGlxFunction( __func__ );
 	}
 
-	Bool ret = realFunction( dpy, drawable, ctx );
+	bool ret = realFunction( dpy, drawable, ctx );
 	setVsync();
 	return ret;
 }

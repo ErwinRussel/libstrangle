@@ -34,102 +34,153 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 
-static long targetFrameTime = -1;
-static int *vsync = NULL;
-static bool *glfinish = NULL;
+static struct config {
+	long       targetFrameTime;
+	int*       vsync;
+	int*       glfinish;
+	int*       retro;
+	float*     anisotropy;
+	float*     mipLodBias;
+	nanotime_t sleepOverhead;
+} config;
 
 __attribute__ ((constructor))
-void init( void ) {
-	long tmp;
-	char *env;
+void init() {
+	char* env;
 
-	targetFrameTime = 0;
+// 	extern const char* __progname;
 
-	env = getenv_array( 3, (const char*[]){ "FPS", "Fps", "fps" } );
-	if ( env != NULL ) {
-		tmp = strtol( env, NULL, 10 );
-		if ( tmp > 0 ) {
-			targetFrameTime = 1000000000 / tmp;
+	config.targetFrameTime = 0;
+
+	if (( env = getenv_array( 2, (const char*[]){ "FPS", "fps" } ) )) {
+		int tmp = strtol( env, NULL, 10 );
+		if ( tmp ) {
+			config.targetFrameTime = 1000000000 / tmp;
 		}
 	}
 
-	env = getenv_array( 4, (const char*[]){ "VSYNC", "VSync", "Vsync", "vsync" } );
-	if ( env != NULL ) {
-		strToLower( env );
-		if ( !strcmp( "true", env ) || !strcmp( "on", env ) ) {
-			vsync = malloc( sizeof(*vsync) );
-			*vsync = 1;
-		} else if ( !strcmp( "false", env ) || !strcmp( "off", env ) ) {
-			vsync = malloc( sizeof(*vsync) );
-			*vsync = 0;
-		} else {
-			char *endptr = NULL;
-			tmp = strtol( env, &endptr, 10 );
-			if ( env != endptr ) {
-				vsync = malloc(sizeof(*vsync));
-				*vsync = (int)tmp;
-			}
-		}
+	if (( env = getenv_array( 2, (const char*[]){ "VSYNC", "vsync" } ) )) {
+		config.vsync = strangle_strtoi( env );
 	}
 
-	env = getenv_array( 6, (const char*[]){ "GLFINISH", "glfinish", "glFinish", "Glfinish", "GlFinish", "GLFinish" } );
-	if ( env != NULL ) {
-		strToLower( env );
-		if ( !strcmp( "true", env ) || !strcmp( "on", env ) || !strcmp( "1", env ) ) {
-			glfinish = malloc( sizeof(bool) );
-			*glfinish = true;
-		} else if ( !strcmp( "false", env ) || !strcmp( "off", env ) || !strcmp( "0", env ) ) {
-			glfinish = malloc( sizeof(bool) );
-			*glfinish = false;
-		}
+	if (( env = getenv_array( 2, (const char*[]){ "GLFINISH", "glfinish" } ) )) {
+		config.glfinish = strangle_strtoi( env );
 	}
+
+	if (( env = getenv_array( 4, (const char*[]){ "MIPLODBIAS", "miplodbias", "PICMIP", "picmip" } ) )) {
+		config.mipLodBias = strangle_strtof( env );
+	}
+
+	if (( env = getenv_array( 2, (const char*[]){ "AF", "af" } ) )) {
+		config.anisotropy = strangle_strtof( env );
+	}
+
+	if (( env = getenv_array( 2, (const char*[]){ "RETRO", "retro" } ) )) {
+		config.retro = strangle_strtoi( env );
+	}
+
+	config.sleepOverhead = findSleepOverhead();
 }
 
-void limiter( void ) {
-	static const clockid_t clockType = CLOCK_MONOTONIC_RAW;
+int* strangle_strtoi( const char* str ) {
+	char* endptr = NULL;
+	int* result = NULL;
+	long tmp = strtol( str, &endptr, 10 );
 
-	static struct timespec oldTimestamp,
-	                       newTimestamp,
-	                       sleepyTime,
-	                       remainingTime;
+	if ( str != endptr ) {
+		result = malloc( sizeof(*result) );
+		*result = (int)tmp;
+	}
 
-	if ( glfinish != NULL && *glfinish == true ) {
+	return result;
+}
+
+float* strangle_strtof( const char* str ) {
+	char* endptr = NULL;
+	float* result = NULL;
+	float tmp = strtof( str, &endptr );
+
+	if ( str != endptr ) {
+		result = malloc( sizeof(*result) );
+		*result = (float)tmp;
+	}
+
+	return result;
+}
+
+struct timespec nanotimeToTimespec( nanotime_t time ) {
+	struct timespec ts;
+	ts.tv_nsec = time % ONE_BILLION;
+	ts.tv_sec = time / ONE_BILLION;
+
+	return ts;
+}
+
+nanotime_t timespecToNanotime( const struct timespec* ts ) {
+	return (nanotime_t)ts->tv_sec * (nanotime_t)ONE_BILLION + ts->tv_nsec;
+}
+
+nanotime_t getNanoTime() {
+	struct timespec ts;
+	clock_gettime( CLOCK_MONOTONIC_RAW, &ts );
+
+	return timespecToNanotime( &ts );
+}
+
+nanotime_t getElapsedTime( nanotime_t oldTime ) {
+	return getNanoTime() - oldTime;
+}
+
+nanotime_t getSleepTime( nanotime_t oldTime, nanotime_t target ) {
+	return target - getElapsedTime( oldTime );
+}
+
+int strangle_nanosleep( nanotime_t sleepTime ) {
+	if ( sleepTime <= 0 ) {
+		return 0;
+	}
+
+	struct timespec ts = nanotimeToTimespec( sleepTime );
+	return nanosleep( &ts, NULL );
+}
+
+nanotime_t findSleepOverhead() {
+	const int runs = 100;
+	const int someNumber = 24697; // The second most random number I could find
+	nanotime_t start,
+	           elapsed,
+               r,
+               total = 0;
+
+	for (int i = 0; i < runs; ++i) {
+		r = i * someNumber + 1;
+		start = getNanoTime();
+		strangle_nanosleep( r );
+		elapsed = getElapsedTime( start );
+		total += elapsed - r;
+	}
+
+	return total / runs;
+}
+
+void limiter() {
+	static nanotime_t oldTime = 0;
+
+	if ( config.glfinish != NULL && *config.glfinish == true ) {
 		glFinish();
 	}
 
-	if ( targetFrameTime <= 0 ) {
+	if ( config.targetFrameTime <= 0 ) {
 		return;
 	}
 
-	if ( clock_gettime( clockType, &newTimestamp ) == 0 ) {
-		sleepyTime.tv_nsec = targetFrameTime - newTimestamp.tv_nsec + oldTimestamp.tv_nsec;
-		while( sleepyTime.tv_nsec > 0 && sleepyTime.tv_nsec < targetFrameTime ) {
+	nanotime_t sleepTime = getSleepTime( oldTime, config.targetFrameTime );
+	strangle_nanosleep( sleepTime - config.sleepOverhead );
 
-			// sleep in smaller and smaller intervals
-			sleepyTime.tv_nsec /= 2;
-			nanosleep( &sleepyTime, &remainingTime );
-			clock_gettime( clockType, &newTimestamp );
-			sleepyTime.tv_nsec = targetFrameTime - newTimestamp.tv_nsec + oldTimestamp.tv_nsec;
-
-			// For FPS == 1 this is needed as tv_nsec cannot exceed 999999999
-			sleepyTime.tv_nsec += newTimestamp.tv_sec*1000000000 - oldTimestamp.tv_sec*1000000000;
-		}
-		clock_gettime( clockType, &oldTimestamp );
-	}
-
-	/*
-	// simple but too imprecise
-	if ( clock_gettime( clockType, &newTimestamp ) == 0 ) {
-		sleepyTime.tv_nsec = targetFrameTime - newTimestamp.tv_nsec + oldTimestamp.tv_nsec;
-		if( sleepyTime.tv_nsec > 0 ) {
-			nanosleep( &sleepyTime, &remainingTime );
-		}
-		clock_gettime( clockType, &oldTimestamp );
-	}
-	*/
+	oldTime = getNanoTime();
 }
 
-void *getStrangleFunc( const char *symbol ) {
+void* getStrangleFunc( const char *symbol ) {
     if ( !strcmp( symbol, "dlsym" ) ) {
 		return dlsym;
 
@@ -159,30 +210,22 @@ void *getStrangleFunc( const char *symbol ) {
 		return (void*)vkGetDeviceProcAddr;
 	} else if ( !strcmp( symbol, "vkCreateSwapchainKHR" ) ) {
 		return (void*)vkCreateSwapchainKHR;
+	} else if ( !strcmp( symbol, "vkCreateSampler" ) ) {
+		return (void*)vkCreateSampler;
 	}
 
 	return NULL;
 }
 
 int getInterval( int interval ) {
-	if ( vsync != NULL ) {
-		return *vsync;
+	if ( config.vsync != NULL ) {
+		return *config.vsync;
 	}
 	return interval;
 }
 
-void setVsync( void ) {
-	if ( vsync != NULL ) {
-		glXSwapIntervalSGI( *vsync );
-	}
-}
-
-int* getVsync( void ) {
-	return vsync;
-}
-
-char *getenv_array( int count, const char **names ) {
-	char *env = NULL;
+char* getenv_array( int count, const char** names ) {
+	char* env = NULL;
 	for ( int i = 0; i < count; ++i ) {
 		env = getenv( names[i] );
 		if ( env != NULL && strcmp( env, "" ) ) {
@@ -192,15 +235,17 @@ char *getenv_array( int count, const char **names ) {
 	return env;
 }
 
-void strToLower( char *str ) {
-	for ( char *p = str; *p; ++p ) {
+char* strToLower( const char* str ) {
+	char* result = strdup( str );
+	for ( char* p = result; *p; ++p ) {
 		*p = tolower( *p );
 	}
+	return result;
 }
 
 #ifdef HOOK_DLSYM
 EXPORTED
-void *dlsym( void *handle, const char *name )
+void* dlsym( void* handle, const char* name )
 {
 	void* func = getStrangleFunc( name );
 	if ( func != NULL ) {
@@ -212,17 +257,16 @@ void *dlsym( void *handle, const char *name )
 #endif
 
 EXPORTED
-void glFinish( void ) {
-	if ( glfinish != NULL && *glfinish == false ) {
+void glFinish() {
+	if ( config.glfinish != NULL && *config.glfinish == false ) {
 		return;
 	}
-	void (*realFunction)( void )
-	= real_dlsym( RTLD_NEXT, "glFinish" );
+	void (*realFunction)() = real_dlsym( RTLD_NEXT, "glFinish" );
 	realFunction();
 }
 
 
-void *strangle_requireFunction( const char * name ) {
+void* strangle_requireFunction( const char* name ) {
 	void (*func)() = real_dlsym( RTLD_NEXT, name );
 
 	if (func == NULL) {
@@ -231,4 +275,30 @@ void *strangle_requireFunction( const char * name ) {
 	}
 
 	return func;
+}
+
+void setVsync() {
+	if ( config.vsync != NULL ) {
+		glXSwapIntervalSGI( *config.vsync );
+	}
+}
+
+int* getVsync() {
+	return config.vsync;
+}
+
+float* getMipLodBias() {
+	return config.mipLodBias;
+}
+
+float* getAnisotropy() {
+	return config.anisotropy;
+}
+
+bool getRetro() {
+	return config.retro;
+}
+
+struct config* getConfig() {
+	return &config;
 }

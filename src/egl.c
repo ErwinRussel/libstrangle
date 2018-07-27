@@ -26,10 +26,10 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #include <dlfcn.h>
 
 EXPORTED
-EGLBoolean eglSwapBuffers( EGLDisplay display, EGLSurface surface ) {
-	EGLBoolean (*realFunction)( EGLDisplay display, EGLSurface surface)
-	= real_dlsym( RTLD_NEXT, "eglSwapBuffers" );
-	EGLBoolean ret;
+unsigned int eglSwapBuffers( void* display, void* surface ) {
+	unsigned int (*realFunction)( void*, void* )
+		= real_dlsym( RTLD_NEXT, "eglSwapBuffers" );
+	unsigned int ret;
 	ret = realFunction( display, surface );
 	limiter();
 	return ret;

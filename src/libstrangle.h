@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2016-2017 Björn Spindel
+Copyright (C) 2016-2018 Björn Spindel
 
 This file is part of libstrangle.
 
@@ -22,18 +22,31 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 
 #define EXPORTED __attribute__((__visibility__("default")))
 
+#include <stdbool.h>
+#include <stdint.h>
+
+#define ONE_BILLION 1000000000
+
+typedef int64_t nanotime_t;
+
 // Private
-void *getStrangleFunc( const char *symbol );
+void* getStrangleFunc( const char* );
 int getInterval( int interval );
 void setVsync( void );
 int* getVsync( void );
+float* getMipLodBias();
+float* getAnisotropy();
+bool getRetro();
 void limiter( void );
-void strToLower( char *str );
-char *getenv_array( int count, const char **names );
-void *strangle_requireFunction( const char * name );
+char* strToLower( const char* );
+char *getenv_array( int count, const char** );
+void *strangle_requireFunction( const char* );
+int* strangle_strtoi( const char* );
+float* strangle_strtof( const char* );
+nanotime_t findSleepOverhead();
 
 // Exported
-void *dlsym( void *handle, const char *name );
+void* dlsym( void*, const char* );
 void glFinish( void );
 
 #endif
