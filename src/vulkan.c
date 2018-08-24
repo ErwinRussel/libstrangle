@@ -26,11 +26,28 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #include <dlfcn.h>
 #include <stdlib.h>
 
+#include <stdio.h>
+
+void* strangle_vkRequireFunction( const char* name ) {
+	void* handle = dlopen( "libvulkan.so", RTLD_NOW );
+	if ( handle == NULL ) {
+		printf( "Strangle: failed to load libvulkan.so\n" );
+	}
+
+	void* func = real_dlsym( handle, name );
+	if ( func == NULL ) {
+		printf( "Strangle: Failed to get function %s\n", name );
+		exit( 1 );
+	}
+
+	return func;
+}
+
 EXPORTED
 void* vkQueuePresentKHR( void* queue, void* pPresentInfo) {
 	static void* (*realFunction)( void*, void* );
 	if (realFunction == NULL) {
-		realFunction = strangle_requireFunction( __func__ );
+		realFunction = strangle_vkRequireFunction( __func__ );
 	}
 
 	void* ret = realFunction( queue, pPresentInfo );
@@ -43,7 +60,7 @@ EXPORTED
 void* vkGetInstanceProcAddr( void* instance, void* pName) {
 	static void* (*realFunction)( void*, void* );
 	if (realFunction == NULL) {
-		realFunction = strangle_requireFunction( __func__ );
+		realFunction = strangle_vkRequireFunction( __func__ );
 	}
 
 	void* func = getStrangleFunc( (const char*)pName );
@@ -58,7 +75,7 @@ EXPORTED
 void* vkGetDeviceProcAddr( void* instance, void* pName) {
 	static void* (*realFunction)( void*, void* );
 	if (realFunction == NULL) {
-		realFunction = strangle_requireFunction( __func__ );
+		realFunction = strangle_vkRequireFunction( __func__ );
 	}
 
 	void* func = getStrangleFunc( (const char*)pName );
@@ -73,7 +90,7 @@ EXPORTED
 void* vkCreateSwapchainKHR( void* device, VkSwapchainCreateInfoKHR* pCreateInfo, void* pAllocator, void* pSwapchain ) {
 	static void* (*realFunction)( void*, VkSwapchainCreateInfoKHR*, void*, void* );
 	if (realFunction == NULL) {
-		realFunction = strangle_requireFunction( __func__ );
+		realFunction = strangle_vkRequireFunction( __func__ );
 	}
 
 	int* vsync = getVsync();
@@ -88,7 +105,7 @@ EXPORTED
 void* vkCreateSampler(void* device, VkSamplerCreateInfo* pCreateInfo, void* pAllocator, void*                                  pSampler) {
 	static void* (*realFunction)( void*, VkSamplerCreateInfo*, void*, void* );
 	if (realFunction == NULL) {
-		realFunction = strangle_requireFunction( __func__ );
+		realFunction = strangle_vkRequireFunction( __func__ );
 	}
 
 	float* picmip = getMipLodBias();
