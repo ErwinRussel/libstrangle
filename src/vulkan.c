@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2018 Björn Spindel
+Copyright (C) 2018-2019 Björn Spindel
 
 This file is part of libstrangle.
 
@@ -30,6 +30,9 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 
 void* strangle_vkRequireFunction( const char* name ) {
 	void* handle = dlopen( "libvulkan.so", RTLD_NOW );
+	if ( handle == NULL ) {
+		handle = dlopen( "libvulkan.so.1", RTLD_NOW );
+	}
 	if ( handle == NULL ) {
 		printf( "Strangle: failed to load libvulkan.so\n" );
 	}
