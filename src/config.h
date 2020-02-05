@@ -9,7 +9,7 @@ typedef struct {
 	float*     mipLodBias;
 } StrangleConfig;
 
-char *getenv_array( int count, const char** );
+// char *getenv_array( int count, const char** );
 StrangleConfig strangle_createConfig();
 int* strangle_strtoi( const char* );
 float* strangle_strtof( const char* );

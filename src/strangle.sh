@@ -19,11 +19,11 @@ if [ "$#" -eq 0 ]; then
 	echo
 	echo "  fps-limit"
 	echo "        a number describing the desired maximum frame rate"
-	echo "        If missing: the environment variable \"FPS\" will be used."
+	echo "        If missing: the environment variable \"STRANGLE_FPS\" will be used."
 	echo "        If neither is set no limit will be applied"
 	exit 1
 fi
 
 # Execute the strangled program under a clean environment
 # pass through the FPS and overriden LD_PRELOAD environment variables
-exec env FPS="${FPS}" LD_PRELOAD="${LD_PRELOAD}:libstrangle.so" "$@"
+exec env STRANGLE_FPS="${FPS}" LD_PRELOAD="${LD_PRELOAD}:libstrangle.so" "$@"

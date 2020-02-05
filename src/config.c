@@ -4,16 +4,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-char* getenv_array( int count, const char** names ) {
-	char* env = NULL;
-	for ( int i = 0; i < count; ++i ) {
-		env = getenv( names[i] );
-		if ( env != NULL && strcmp( env, "" ) ) {
-			break;
-		}
-	}
-	return env;
-}
+// char* getenv_array( int count, const char** names ) {
+// 	char* env = NULL;
+// 	for ( int i = 0; i < count; ++i ) {
+// 		env = getenv( names[i] );
+// 		if ( env != NULL && strcmp( env, "" ) ) {
+// 			break;
+// 		}
+// 	}
+// 	return env;
+// }
 
 int* strangle_strtoi( const char* str ) {
 	char* endptr = NULL;
@@ -47,30 +47,30 @@ StrangleConfig strangle_createConfig() {
 
 	config.targetFrameTime = 0;
 
-	if (( env = getenv_array( 2, (const char*[]){ "FPS", "fps" } ) )) {
+	if (( env = getenv( "STRANGLE_FPS" ))) {
 		double tmp = strtod( env, NULL );
 		if ( tmp ) {
 			config.targetFrameTime = 1000000000.0 / tmp;
 		}
 	}
 
-	if (( env = getenv_array( 2, (const char*[]){ "VSYNC", "vsync" } ) )) {
+	if (( env = getenv( "STRANGLE_VSYNC" ))) {
 		config.vsync = strangle_strtoi( env );
 	}
 
-	if (( env = getenv_array( 2, (const char*[]){ "GLFINISH", "glfinish" } ) )) {
+	if (( env = getenv( "STRANGLE_GLFINISH" ))) {
 		config.glfinish = strangle_strtoi( env );
 	}
 
-	if (( env = getenv_array( 4, (const char*[]){ "MIPLODBIAS", "miplodbias", "PICMIP", "picmip" } ) )) {
+	if (( env = getenv( "STRANGLE_PICMIP" ))) {
 		config.mipLodBias = strangle_strtof( env );
 	}
 
-	if (( env = getenv_array( 2, (const char*[]){ "AF", "af" } ) )) {
+	if (( env = getenv( "STRANGLE_AF" ))) {
 		config.anisotropy = strangle_strtof( env );
 	}
 
-	if (( env = getenv_array( 2, (const char*[]){ "RETRO", "retro" } ) )) {
+	if (( env = getenv( "STRANGLE_RETRO" ))) {
 		config.retro = strangle_strtoi( env );
 	}
 
