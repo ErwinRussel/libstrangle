@@ -22,7 +22,6 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #include "libstrangle.h"
 #include "glx.h"
 #include "egl.h"
-#include "vulkan.h"
 #include "real_dlsym.h"
 
 #include <dlfcn.h>
@@ -188,17 +187,6 @@ void* getStrangleFunc( const char *symbol ) {
 		return (void*)glXSwapIntervalMESA;
 	} else if ( !strcmp( symbol, "glXMakeCurrent" ) ) {
 		return (void*)glXMakeCurrent;
-
-	} else if ( !strcmp( symbol, "vkQueuePresentKHR" ) ) {
-		return (void*)vkQueuePresentKHR;
-	} else if ( !strcmp( symbol, "vkGetInstanceProcAddr" ) ) {
-		return (void*)vkGetInstanceProcAddr;
-	} else if ( !strcmp( symbol, "vkGetDeviceProcAddr" ) ) {
-		return (void*)vkGetDeviceProcAddr;
-	} else if ( !strcmp( symbol, "vkCreateSwapchainKHR" ) ) {
-		return (void*)vkCreateSwapchainKHR;
-	} else if ( !strcmp( symbol, "vkCreateSampler" ) ) {
-		return (void*)vkCreateSampler;
 	}
 
 	return NULL;
