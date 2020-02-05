@@ -23,7 +23,6 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #include "glx.h"
 #include "egl.h"
 #include "vulkan.h"
-#include "gl.h"
 #include "real_dlsym.h"
 
 #include <dlfcn.h>
@@ -189,51 +188,6 @@ void* getStrangleFunc( const char *symbol ) {
 		return (void*)glXSwapIntervalMESA;
 	} else if ( !strcmp( symbol, "glXMakeCurrent" ) ) {
 		return (void*)glXMakeCurrent;
-
-// 	} else if ( !strcmp( symbol, "glTexEnvf" ) ) {
-// 		return (void*)glTexEnvf;
-// 	} else if ( !strcmp( symbol, "glTexEnvi" ) ) {
-// 		return (void*)glTexEnvi;
-// 	} else if ( !strcmp( symbol, "glTexEnvfv" ) ) {
-// 		return (void*)glTexEnvfv;
-// 	} else if ( !strcmp( symbol, "glTexEnviv" ) ) {
-// 		return (void*)glTexEnviv;
-// 	} else if ( !strcmp( symbol, "glTexParameterf" ) ) {
-// 		return (void*)glTexParameterf;
-// 	} else if ( !strcmp( symbol, "glTexParameteri" ) ) {
-// 		return (void*)glTexParameteri;
-// 	} else if ( !strcmp( symbol, "glTexParameterfv" ) ) {
-// 		return (void*)glTexParameterfv;
-// 	} else if ( !strcmp( symbol, "glTexParameteriv" ) ) {
-// 		return (void*)glTexParameteriv;
-// 	} else if ( !strcmp( symbol, "glTexParameterIiv" ) ) {
-// 		return (void*)glTexParameterIiv;
-// 	} else if ( !strcmp( symbol, "glTexParameterIuiv" ) ) {
-// 		return (void*)glTexParameterIuiv;
-// 	} else if ( !strcmp( symbol, "glSamplerParameterf" ) ) {
-// 		return (void*)glSamplerParameterf;
-// 	} else if ( !strcmp( symbol, "glSamplerParameteri" ) ) {
-// 		return (void*)glSamplerParameteri;
-// 	} else if ( !strcmp( symbol, "glSamplerParameterfv" ) ) {
-// 		return (void*)glSamplerParameterfv;
-// 	} else if ( !strcmp( symbol, "glSamplerParameteriv" ) ) {
-// 		return (void*)glSamplerParameteriv;
-// 	} else if ( !strcmp( symbol, "glSamplerParameterIiv" ) ) {
-// 		return (void*)glSamplerParameterIiv;
-// 	} else if ( !strcmp( symbol, "glSamplerParameterIuiv" ) ) {
-// 		return (void*)glSamplerParameterIuiv;
-// 	} else if ( !strcmp( symbol, "glTextureParameterf" ) ) {
-// 		return (void*)glTextureParameterf;
-// 	} else if ( !strcmp( symbol, "glTextureParameteri" ) ) {
-// 		return (void*)glTextureParameteri;
-// 	} else if ( !strcmp( symbol, "glTextureParameterfv" ) ) {
-// 		return (void*)glTextureParameterfv;
-// 	} else if ( !strcmp( symbol, "glTextureParameteriv" ) ) {
-// 		return (void*)glTextureParameteriv;
-// 	} else if ( !strcmp( symbol, "glTextureParameterIiv" ) ) {
-// 		return (void*)glTextureParameterIiv;
-// 	} else if ( !strcmp( symbol, "glTextureParameterIuiv" ) ) {
-// 		return (void*)glTextureParameterIuiv;
 
 	} else if ( !strcmp( symbol, "vkQueuePresentKHR" ) ) {
 		return (void*)vkQueuePresentKHR;

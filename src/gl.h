@@ -42,28 +42,4 @@
 
 #define GL_TEXTURE_2D                     0x0DE1
 
-// void glTexEnvf( int, int, float );
-// void glTexEnvi( int, int, int );
-// void glTexEnvfv( int, int, float* );
-// void glTexEnviv( int, int, int* );
-//
-// void glTexParameterf( void*, int, float );
-// void glTexParameteri( void*, int, int );
-// void glTexParameterfv( void*, int, float* );
-// void glTexParameteriv( void*, int, int* );
-// void glTexParameterIiv( void*, int, int* );
-// void glTexParameterIuiv( void*, int, unsigned int* );
-// void glSamplerParameterf( void*, int, float );
-// void glSamplerParameteri( void*, int, int );
-// void glSamplerParameterfv( void*, int, float* );
-// void glSamplerParameteriv( void*, int, int* );
-// void glSamplerParameterIiv( void*, int, int* );
-// void glSamplerParameterIuiv( void*, int, unsigned int* );
-// void glTextureParameterf( void*, int, float );
-// void glTextureParameteri( void*, int, int );
-// void glTextureParameterfv( void*, int, float* );
-// void glTextureParameteriv( void*, int, int* );
-// void glTextureParameterIiv( void*, int, int* );
-// void glTextureParameterIuiv( void*, int, unsigned int* );
-
 #endif
