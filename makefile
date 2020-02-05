@@ -1,5 +1,6 @@
 CC=gcc
-CFLAGS=-rdynamic -fPIC -shared -Wall -std=c99 -fvisibility=hidden -DHOOK_DLSYM
+INC=-Isrc
+CFLAGS=-rdynamic -fPIC -shared -Wall -std=c99 -fvisibility=hidden -DHOOK_DLSYM $(INC)
 LDFLAGS=-Wl,-z,relro,-z,now
 LDLIBS=-ldl -lrt
 prefix=/usr/local
@@ -10,7 +11,8 @@ LIB32_PATH=$(libdir)/libstrangle/lib32
 LIB64_PATH=$(libdir)/libstrangle/lib64
 SOURCEDIR=src/
 BUILDDIR=build/
-SOURCES=$(wildcard $(SOURCEDIR)*.c)
+COMMON_SOURCES=$(wildcard $(SOURCEDIR)*.c)
+GL_SOURCES=$(COMMON_SOURCES) $(wildcard $(SOURCEDIR)opengl/*.c)
 
 all: $(BUILDDIR)libstrangle64.so $(BUILDDIR)libstrangle32.so $(BUILDDIR)libstrangle.conf
 
@@ -22,10 +24,10 @@ $(BUILDDIR)libstrangle.conf: $(BUILDDIR)
 	@echo "$(LIB64_PATH)/" >> $(BUILDDIR)libstrangle.conf
 
 $(BUILDDIR)libstrangle64.so: $(BUILDDIR)
-	$(CC) $(CFLAGS) $(LDFLAGS) -m64 -o $(BUILDDIR)libstrangle64.so $(SOURCES) $(LDLIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -m64 -o $(BUILDDIR)libstrangle64.so $(GL_SOURCES) $(LDLIBS)
 
 $(BUILDDIR)libstrangle32.so: $(BUILDDIR)
-	$(CC) $(CFLAGS) $(LDFLAGS) -m32 -o $(BUILDDIR)libstrangle32.so $(SOURCES) $(LDLIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -m32 -o $(BUILDDIR)libstrangle32.so $(GL_SOURCES) $(LDLIBS)
 
 install: all
 	install -m 0644 -D -T $(BUILDDIR)libstrangle.conf $(DESTDIR)/etc/ld.so.conf.d/libstrangle.conf
