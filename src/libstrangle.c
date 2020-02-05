@@ -231,7 +231,7 @@ char* strToLower( const char* str ) {
 }
 
 #ifdef HOOK_DLSYM
-EXPORTED
+EXPORT
 void* dlsym( void* handle, const char* name )
 {
 	void* func = getStrangleFunc( name );
@@ -243,7 +243,7 @@ void* dlsym( void* handle, const char* name )
 }
 #endif
 
-EXPORTED
+EXPORT
 void glFinish() {
 	if ( config.glfinish != NULL && *config.glfinish == false ) {
 		return;

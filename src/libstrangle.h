@@ -20,7 +20,7 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef LIBSTRANGLE_H_
 #define LIBSTRANGLE_H_
 
-#define EXPORTED __attribute__((__visibility__("default")))
+#define EXPORT __attribute__((__visibility__("default")))
 
 #include <stdbool.h>
 #include <stdint.h>

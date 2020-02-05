@@ -51,7 +51,7 @@ void* strangle_requireGlxFunction( const char* name ) {
 	return func;
 }
 
-EXPORTED
+EXPORT
 void glXSwapBuffers( void* dpy, void* drawable ) {
 	static void (*realFunction)( void*, void* );
 	if (realFunction == NULL) {
@@ -70,7 +70,7 @@ void glXSwapBuffers( void* dpy, void* drawable ) {
 	limiter();
 }
 
-EXPORTED
+EXPORT
 void glXSwapIntervalEXT( void* dpy, void* drawable, int interval ) {
 	static void (*realFunction)( void*, void*, int );
 	if (realFunction == NULL) {
@@ -80,7 +80,7 @@ void glXSwapIntervalEXT( void* dpy, void* drawable, int interval ) {
 	realFunction( dpy, drawable, getInterval( interval ) );
 }
 
-EXPORTED
+EXPORT
 int glXSwapIntervalSGI( int interval ) {
 	static int (*realFunction)( int );
 	if (realFunction == NULL) {
@@ -90,7 +90,7 @@ int glXSwapIntervalSGI( int interval ) {
 	return realFunction( getInterval( interval ) );
 }
 
-EXPORTED
+EXPORT
 int glXSwapIntervalMESA( unsigned int interval ) {
 	static int (*realFunction)( int );
 	if (realFunction == NULL) {
@@ -100,7 +100,7 @@ int glXSwapIntervalMESA( unsigned int interval ) {
 	return realFunction( getInterval( interval ) );
 }
 
-EXPORTED
+EXPORT
 void* glXGetProcAddress( const unsigned char* procName ) {
 	static void* (*realFunction)( const unsigned char* );
 	if (realFunction == NULL) {
@@ -115,7 +115,7 @@ void* glXGetProcAddress( const unsigned char* procName ) {
 	return realFunction( procName );
 }
 
-EXPORTED
+EXPORT
 void* glXGetProcAddressARB( const unsigned char* procName ) {
 	static void *(*realFunction)( const unsigned char* );
 	if (realFunction == NULL) {
@@ -130,7 +130,7 @@ void* glXGetProcAddressARB( const unsigned char* procName ) {
 	return realFunction( procName );
 }
 
-EXPORTED
+EXPORT
 bool glXMakeCurrent( void* dpy, void* drawable, void* ctx ) {
 	static bool (*realFunction)( void*, void*, void* );
 	if (realFunction == NULL) {

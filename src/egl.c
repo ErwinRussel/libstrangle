@@ -25,7 +25,7 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <dlfcn.h>
 
-EXPORTED
+EXPORT
 unsigned int eglSwapBuffers( void* display, void* surface ) {
 	unsigned int (*realFunction)( void*, void* )
 		= real_dlsym( RTLD_NEXT, "eglSwapBuffers" );
