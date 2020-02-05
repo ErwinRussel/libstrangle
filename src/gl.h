@@ -17,8 +17,7 @@
  * along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GL_H_
-#define GL_H_
+#pragma once
 
 #define GL_NEAREST                        0x2600
 #define GL_LINEAR                         0x2601
@@ -41,5 +40,3 @@
 #define GL_TEXTURE_FILTER_CONTROL         0x8500
 
 #define GL_TEXTURE_2D                     0x0DE1
-
-#endif

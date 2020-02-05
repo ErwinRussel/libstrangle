@@ -17,8 +17,7 @@ You should have received a copy of the GNU General Public License
 along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef LIBSTRANGLE_H_
-#define LIBSTRANGLE_H_
+#pragma once
 
 #define EXPORT __attribute__((__visibility__("default")))
 
@@ -48,5 +47,3 @@ nanotime_t findSleepOverhead();
 // Exported
 void* dlsym( void*, const char* );
 void glFinish( void );
-
-#endif

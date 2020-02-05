@@ -17,9 +17,6 @@ You should have received a copy of the GNU General Public License
 along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef REAL_DLSYM_H_
-#define REAL_DLSYM_H_
+#pragma once
 
 void* real_dlsym( void*, const char* );
-
-#endif

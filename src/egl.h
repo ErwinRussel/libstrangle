@@ -17,9 +17,6 @@ You should have received a copy of the GNU General Public License
 along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef EGL_H_
-#define EGL_H_
+#pragma once
 
 unsigned int eglSwapBuffers( void*, void* );
-
-#endif
