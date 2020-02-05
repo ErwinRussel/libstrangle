@@ -22,15 +22,36 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #include "egl.h"
 #include "real_dlsym.h"
 #include "libstrangle.h"
+#include "limiter.h"
+#include "config.h"
+#include "gl.h"
 
+#include <stddef.h>
 #include <dlfcn.h>
+#include <stdbool.h>
 
 EXPORT
-unsigned int eglSwapBuffers( void* display, void* surface ) {
-	unsigned int (*realFunction)( void*, void* )
-		= real_dlsym( RTLD_NEXT, "eglSwapBuffers" );
+unsigned int eglSwapBuffers( void* dpy, void* drawable ) {
 	unsigned int ret;
-	ret = realFunction( display, surface );
-	limiter();
+	static unsigned int (*realFunction)( void*, void* );
+	if (realFunction == NULL) {
+		realFunction = strangle_requireFunction( __func__ );
+	}
+
+	StrangleConfig *config = getConfig();
+
+	// There is probably a better place for this but where???
+	if ( config->mipLodBias ) {
+		void (*glTexEnvf)( int, int, float ) = strangle_requireFunction("glTexEnvf");
+		glTexEnvf( GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, *config->mipLodBias );
+	}
+
+	if ( config->glfinish != NULL && *config->glfinish == true ) {
+		glFinish();
+	}
+
+	// The buffer swap is called before the wait in hope that it will reduce perceived input lag
+	ret = realFunction( dpy, drawable );
+	limiter( config->targetFrameTime );
 	return ret;
 }

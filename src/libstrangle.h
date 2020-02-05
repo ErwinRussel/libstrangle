@@ -21,12 +21,7 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 
 #define EXPORT __attribute__((__visibility__("default")))
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#define ONE_BILLION 1000000000
-
-typedef int64_t nanotime_t;
+#include "config.h"
 
 // Private
 void* getStrangleFunc( const char* );
@@ -36,13 +31,10 @@ int* getVsync( void );
 float* getMipLodBias();
 float* getAnisotropy();
 int* getRetro();
-void limiter( void );
+int* getGlFinish();
+StrangleConfig* getConfig();
 char* strToLower( const char* );
-char *getenv_array( int count, const char** );
 void *strangle_requireFunction( const char* );
-int* strangle_strtoi( const char* );
-float* strangle_strtof( const char* );
-nanotime_t findSleepOverhead();
 
 // Exported
 void* dlsym( void*, const char* );

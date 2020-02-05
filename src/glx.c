@@ -23,6 +23,8 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #include "gl.h"
 #include "libstrangle.h"
 #include "real_dlsym.h"
+#include "limiter.h"
+#include "config.h"
 
 #include <dlfcn.h>
 #include <stdlib.h>
@@ -58,16 +60,21 @@ void glXSwapBuffers( void* dpy, void* drawable ) {
 		realFunction = strangle_requireGlxFunction( __func__ );
 	}
 
+	StrangleConfig *config = getConfig();
+
 	// There is probably a better place for this but where???
-	float* picmip = getMipLodBias();
-	if ( picmip ) {
+	if ( config->mipLodBias ) {
 		void (*glTexEnvf)( int, int, float ) = strangle_requireFunction("glTexEnvf");
-		glTexEnvf( GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, *picmip );
+		glTexEnvf( GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, *config->mipLodBias );
+	}
+
+	if ( config->glfinish != NULL && *config->glfinish == true ) {
+		glFinish();
 	}
 
 	// The buffer swap is called before the wait in hope that it will reduce perceived input lag
 	realFunction( dpy, drawable );
-	limiter();
+	limiter( config->targetFrameTime );
 }
 
 EXPORT

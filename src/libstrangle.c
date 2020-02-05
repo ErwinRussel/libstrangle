@@ -23,6 +23,7 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #include "glx.h"
 #include "egl.h"
 #include "real_dlsym.h"
+#include "config.h"
 
 #include <dlfcn.h>
 #include <time.h>
@@ -33,136 +34,15 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 
-static struct config {
-	long       targetFrameTime;
-	int*       vsync;
-	int*       glfinish;
-	int*       retro;
-	float*     anisotropy;
-	float*     mipLodBias;
-} config;
+static StrangleConfig config;
 
 __attribute__ ((constructor))
 void init() {
-	char* env;
-
 // 	extern const char* __progname;
 
-	config.targetFrameTime = 0;
-
-	if (( env = getenv_array( 2, (const char*[]){ "FPS", "fps" } ) )) {
-		double tmp = strtod( env, NULL );
-		if ( tmp ) {
-			config.targetFrameTime = 1000000000.0 / tmp;
-		}
-	}
-
-	if (( env = getenv_array( 2, (const char*[]){ "VSYNC", "vsync" } ) )) {
-		config.vsync = strangle_strtoi( env );
-	}
-
-	if (( env = getenv_array( 2, (const char*[]){ "GLFINISH", "glfinish" } ) )) {
-		config.glfinish = strangle_strtoi( env );
-	}
-
-	if (( env = getenv_array( 4, (const char*[]){ "MIPLODBIAS", "miplodbias", "PICMIP", "picmip" } ) )) {
-		config.mipLodBias = strangle_strtof( env );
-	}
-
-	if (( env = getenv_array( 2, (const char*[]){ "AF", "af" } ) )) {
-		config.anisotropy = strangle_strtof( env );
-	}
-
-	if (( env = getenv_array( 2, (const char*[]){ "RETRO", "retro" } ) )) {
-		config.retro = strangle_strtoi( env );
-	}
-
+	config = strangle_createConfig();
 }
 
-int* strangle_strtoi( const char* str ) {
-	char* endptr = NULL;
-	int* result = NULL;
-	long tmp = strtol( str, &endptr, 10 );
-
-	if ( str != endptr ) {
-		result = malloc( sizeof(*result) );
-		*result = (int)tmp;
-	}
-
-	return result;
-}
-
-float* strangle_strtof( const char* str ) {
-	char* endptr = NULL;
-	float* result = NULL;
-	float tmp = strtof( str, &endptr );
-
-	if ( str != endptr ) {
-		result = malloc( sizeof(*result) );
-		*result = (float)tmp;
-	}
-
-	return result;
-}
-
-struct timespec nanotimeToTimespec( nanotime_t time ) {
-	struct timespec ts;
-	ts.tv_nsec = time % ONE_BILLION;
-	ts.tv_sec = time / ONE_BILLION;
-
-	return ts;
-}
-
-nanotime_t timespecToNanotime( const struct timespec* ts ) {
-	return (nanotime_t)ts->tv_sec * (nanotime_t)ONE_BILLION + ts->tv_nsec;
-}
-
-nanotime_t getNanoTime() {
-	struct timespec ts;
-	clock_gettime( CLOCK_MONOTONIC_RAW, &ts );
-
-	return timespecToNanotime( &ts );
-}
-
-nanotime_t getElapsedTime( nanotime_t oldTime ) {
-	return getNanoTime() - oldTime;
-}
-
-nanotime_t getSleepTime( nanotime_t oldTime, nanotime_t target ) {
-	return target - getElapsedTime( oldTime );
-}
-
-int strangle_nanosleep( nanotime_t sleepTime ) {
-	if ( sleepTime <= 0 ) {
-		return 0;
-	}
-
-	struct timespec ts = nanotimeToTimespec( sleepTime );
-	return nanosleep( &ts, NULL );
-}
-
-void limiter() {
-	static nanotime_t oldTime = 0,
-	                  overhead = 0;
-
-	if ( config.glfinish != NULL && *config.glfinish == true ) {
-		glFinish();
-	}
-
-	if ( config.targetFrameTime <= 0 ) {
-		return;
-	}
-
-	nanotime_t start = getNanoTime();
-	nanotime_t sleepTime = getSleepTime( oldTime, config.targetFrameTime );
-	if ( sleepTime > overhead ) {
-		nanotime_t adjustedSleepTime = sleepTime - overhead;
-		strangle_nanosleep( adjustedSleepTime );
-		overhead = (getElapsedTime( start ) - adjustedSleepTime + overhead * 99) / 100;
-	}
-
-	oldTime = getNanoTime();
-}
 
 void* getStrangleFunc( const char *symbol ) {
 	// kill me
@@ -197,17 +77,6 @@ int getInterval( int interval ) {
 		return *config.vsync;
 	}
 	return interval;
-}
-
-char* getenv_array( int count, const char** names ) {
-	char* env = NULL;
-	for ( int i = 0; i < count; ++i ) {
-		env = getenv( names[i] );
-		if ( env != NULL && strcmp( env, "" ) ) {
-			break;
-		}
-	}
-	return env;
 }
 
 char* strToLower( const char* str ) {
@@ -274,6 +143,10 @@ int* getRetro() {
 	return config.retro;
 }
 
-struct config* getConfig() {
+int* getGlFinish() {
+	return config.glfinish;
+}
+
+StrangleConfig* getConfig() {
 	return &config;
 }
