@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2016-2020 Björn Spindel
+ *
+ * This file is part of libstrangle.
+ *
+ * libstrangle is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * libstrangle is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "config.h"
 
 #include <stddef.h>
@@ -21,7 +40,7 @@ int* strangle_strtoi( const char* str ) {
 	long tmp = strtol( str, &endptr, 10 );
 
 	if ( str != endptr ) {
-		result = malloc( sizeof(*result) );
+		result = (int*)malloc( sizeof(*result) );
 		*result = (int)tmp;
 	}
 
@@ -34,7 +53,7 @@ float* strangle_strtof( const char* str ) {
 	float tmp = strtof( str, &endptr );
 
 	if ( str != endptr ) {
-		result = malloc( sizeof(*result) );
+		result = (float*)malloc( sizeof(*result) );
 		*result = (float)tmp;
 	}
 
@@ -46,6 +65,12 @@ StrangleConfig strangle_createConfig() {
 	char* env;
 
 	config.targetFrameTime = 0;
+
+	config.vsync      = NULL;
+	config.glfinish   = NULL;
+	config.retro      = NULL;
+	config.anisotropy = NULL;
+	config.mipLodBias = NULL;
 
 	if (( env = getenv( "STRANGLE_FPS" ))) {
 		double tmp = strtod( env, NULL );

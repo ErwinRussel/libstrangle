@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2016-2018 Björn Spindel
+Copyright (C) 2016-2020 Björn Spindel
 
 This file is part of libstrangle.
 

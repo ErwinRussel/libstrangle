@@ -5,11 +5,6 @@ if echo $1 | grep -Eq '^[0-9]+(\.[0-9]+)?$'; then
 	shift
 fi
 
-if [ "$STRANGLE_TOPT" = "1" ]; then
-	LD_PRELOAD="libpthread.so.0:${LD_PRELOAD}"
-	export __GL_THREADED_OPTIMIZATIONS=1
-fi
-
 STRANGLE_LIB_NAME="libstrangle.so"
 if [ "$STRANGLE_NODLSYM" = "1" ]; then
 	STRANGLE_LIB_NAME="libstrangle_nodlsym.so"
@@ -30,5 +25,8 @@ fi
 
 # Execute the strangled program under a clean environment
 # pass through the FPS and overriden LD_PRELOAD environment variables
-echo ${STRANGLE_LIB_NAME}
-exec env STRANGLE_FPS="${FPS}" LD_PRELOAD="${LD_PRELOAD}:${STRANGLE_LIB_NAME}" "$@"
+if [ "$STRANGLE_VKONLY" != "1" ]; then
+	LD_PRELOAD="${LD_PRELOAD}:${STRANGLE_LIB_NAME}"
+fi
+
+exec env ENABLE_VK_LAYER_TORKEL104_libstrangle=1 STRANGLE_FPS="${FPS}" LD_PRELOAD="${LD_PRELOAD}" "$@"
