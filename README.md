@@ -31,8 +31,9 @@ You can use this with Steam by right-clicking on a game in your library and sele
 `strangle <somenumber> %command%`
 ### Options
 Strangle can be controlled with environment variables.
+
 | ENV VAR                               | Value | Explanation |
-| ---                                   | ---   | ---         |
+| ---                                   | ---   | ---:        |
 | STRANGLE_FPS                          | <decimal> 0 to disable. Any positive value to enable. Non-integer values allowed. | Maximum framerate |
 | STRANGLE_VSYNC                        | <int>  | See the above section on v-sync |
 | STRANGLE_GLFINISH                     | 0 or 1 | Forces glFinish() to run after every frame |
