@@ -34,7 +34,7 @@ Strangle can be controlled with environment variables.
 
 | ENV VAR                               | Value | Explanation |
 | ---                                   | ---   | ---:        |
-| STRANGLE_FPS                          | &lt;decimal&gt; 0 to disable. Any positive value to enable. Non-integer values allowed. | Maximum framerate |
+| STRANGLE_FPS                          | &lt;decimal&gt; | Maximum framerate. 0 to disable. Any positive value to enable |
 | STRANGLE_VSYNC                        | &lt;int&gt;  | See the above section on v-sync |
 | STRANGLE_GLFINISH                     | 0 or 1 | Forces glFinish() to run after every frame |
 | STRANGLE_PICMIP                       | -16 to 16 | Mip-map LoD bias. Negative values will increase texture sharpness (and aliasing). Positive values will increase texture blurriness |
