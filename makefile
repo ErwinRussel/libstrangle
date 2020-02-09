@@ -3,12 +3,15 @@ INC=-Isrc
 CFLAGS=-rdynamic -fPIC -shared -Wall -std=c99 -fvisibility=hidden $(INC)
 LDFLAGS=-Wl,-z,relro,-z,now
 LDLIBS=-ldl -lrt
+
 prefix=/usr/local
-bindir=$(prefix)/bin
-libdir=$(prefix)/lib
-DOC_PATH=$(prefix)/share/doc/libstrangle
+exec_prefix=$(prefix)
+bindir=$(exec_prefix)/bin
+libdir=$(exec_prefix)/lib
+datarootdir=$(prefix)/share
 LIB32_PATH=$(libdir)/libstrangle/lib32
 LIB64_PATH=$(libdir)/libstrangle/lib64
+
 SOURCEDIR=src
 BUILDDIR=build
 COMMON_SOURCES=$(wildcard $(SOURCEDIR)/*.c)
@@ -18,9 +21,14 @@ CXX=g++
 CXXFLAGS= -pthread -rdynamic -fPIC -shared -Wall -std=gnu++17 -fvisibility=hidden -Iinclude $(INC) -DVK_USE_PLATFORM_XLIB_KHR -DHAVE_PTHREAD -DHAVE_TIMESPEC_GET
 LDXXFLAGS=
 LDXXLIBS=-lrt
-VK_SOURCES=$(COMMON_SOURCES) $(wildcard $(SOURCEDIR)/vulkan/*.c) $(wildcard $(SOURCEDIR)/vulkan/*.cpp) $(wildcard include/mesa/util/*.c) $(wildcard include/mesa/main/*.c)
+VK_SOURCES=\
+	$(COMMON_SOURCES) \
+	$(wildcard $(SOURCEDIR)/vulkan/*.c) \
+	$(wildcard $(SOURCEDIR)/vulkan/*.cpp) \
+	$(wildcard include/mesa/util/*.c) \
+	$(wildcard include/mesa/main/*.c)
 
-.PHONY: all 32-bit 64-bit ld clean uninstall install install-32 install-64 install-ld install-common
+.PHONY: all 32-bit 64-bit native ld clean uninstall install install-32 install-64 install-ld install-common install-native
 
 all: 32-bit 64-bit ld
 
@@ -33,6 +41,11 @@ all: 32-bit 64-bit ld
 	$(BUILDDIR)/libstrangle64.so \
 	$(BUILDDIR)/libstrangle64_nodlsym.so \
 	$(BUILDDIR)/libstrangle_vk64.so
+
+native: \
+	$(BUILDDIR)/libstrangle_native.so \
+	$(BUILDDIR)/libstrangle_native_nodlsym.so \
+	$(BUILDDIR)/libstrangle_vk_native.so
 
 ld: $(BUILDDIR)/libstrangle.conf
 
@@ -61,10 +74,19 @@ $(BUILDDIR)/libstrangle_vk64.so: | $(BUILDDIR)
 $(BUILDDIR)/libstrangle_vk32.so: | $(BUILDDIR)
 	$(CXX) $(CXXFLAGS) $(LDXXFLAGS) -m32 -o $@ $(VK_SOURCES) $(LDXXLIBS)
 
+$(BUILDDIR)/libstrangle_native.so: | $(BUILDDIR)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(GL_SOURCES) $(LDLIBS) -DHOOK_DLSYM
+
+$(BUILDDIR)/libstrangle_native_nodlsym.so: | $(BUILDDIR)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(GL_SOURCES) $(LDLIBS)
+
+$(BUILDDIR)/libstrangle_vk_native.so: | $(BUILDDIR)
+	$(CXX) $(CXXFLAGS) $(LDXXFLAGS) -o $@ $(VK_SOURCES) $(LDXXLIBS)
+
 install-common:
 	install -m 0755 -D -T $(SOURCEDIR)/strangle.sh $(DESTDIR)$(bindir)/strangle
 	install -m 0755 -D -T $(SOURCEDIR)/stranglevk.sh $(DESTDIR)$(bindir)/stranglevk
-	install -m 0644 -D -T $(SOURCEDIR)/vulkan/libstrangle_vk.json $(DESTDIR)$(prefix)/share/vulkan/implicit_layer.d/libstrangle_vk.json
+	install -m 0644 -D -T $(SOURCEDIR)/vulkan/libstrangle_vk.json $(DESTDIR)$(datarootdir)/vulkan/implicit_layer.d/libstrangle_vk.json
 
 install-ld: ld
 	install -m 0644 -D -T $(BUILDDIR)/libstrangle.conf $(DESTDIR)/etc/ld.so.conf.d/libstrangle.conf
@@ -80,6 +102,11 @@ install-64: 64-bit
 	install -m 0755 -D -T $(BUILDDIR)/libstrangle64_nodlsym.so $(DESTDIR)$(LIB64_PATH)/libstrangle_nodlsym.so
 	install -m 0755 -D -T $(BUILDDIR)/libstrangle_vk64.so $(DESTDIR)$(LIB64_PATH)/libstrangle_vk.so
 
+install-native: native
+	install -m 0755 -D -T $(BUILDDIR)/libstrangle_native.so $(DESTDIR)$(libdir)/libstrangle.so
+	install -m 0755 -D -T $(BUILDDIR)/libstrangle_native_nodlsym.so $(DESTDIR)$(libdir)/libstrangle_nodlsym.so
+	install -m 0755 -D -T $(BUILDDIR)/libstrangle_vk_native.so $(DESTDIR)$(libdir)/libstrangle_vk.so
+
 install: \
 	all \
 	install-common \
@@ -90,10 +117,13 @@ install: \
 clean:
 	rm -f $(BUILDDIR)/libstrangle64.so
 	rm -f $(BUILDDIR)/libstrangle32.so
+	rm -f $(BUILDDIR)/libstrangle_native.so
 	rm -f $(BUILDDIR)/libstrangle64_nodlsym.so
 	rm -f $(BUILDDIR)/libstrangle32_nodlsym.so
+	rm -f $(BUILDDIR)/libstrangle_native_nodlsym.so
 	rm -f $(BUILDDIR)/libstrangle_vk64.so
 	rm -f $(BUILDDIR)/libstrangle_vk32.so
+	rm -f $(BUILDDIR)/libstrangle_vk_native.so
 	rm -f $(BUILDDIR)/libstrangle.conf
 
 uninstall:
@@ -104,7 +134,6 @@ uninstall:
 	rm -f $(DESTDIR)$(LIB64_PATH)/libstrangle_nodlsym.so
 	rm -f $(DESTDIR)$(LIB32_PATH)/libstrangle_vk.so
 	rm -f $(DESTDIR)$(LIB64_PATH)/libstrangle_vk.so
-	rm -f $(DESTDIR)$(prefix)/share/vulkan/implicit_layer.d/libstrangle_vk.json
+	rm -f $(DESTDIR)$(datarootdir)/vulkan/implicit_layer.d/libstrangle_vk.json
 	rm -f $(DESTDIR)$(bindir)/strangle
 	rm -f $(DESTDIR)$(bindir)/stranglevk
-	rm -f $(DESTDIR)$(DOC_PATH)/LICENSE
