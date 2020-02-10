@@ -59,6 +59,8 @@ sudo make install
 ```
 gcc-multilib
 g++-multilib
+libx11-dev
+mesa-common-dev
 ```
 
 **OpenSUSE** needs these packages:
