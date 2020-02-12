@@ -20,7 +20,6 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #define _GNU_SOURCE
 
 #include "glx.h"
-#include "gl.h"
 #include "libstrangle.h"
 #include "real_dlsym.h"
 #include "limiter.h"
@@ -28,6 +27,8 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <dlfcn.h>
 #include <stdlib.h>
+
+#include <GL/gl.h>
 
 void* strangle_requireGlxFunction( const char* name ) {
 	static void *(*real_glXGetProcAddress)( const unsigned char* );

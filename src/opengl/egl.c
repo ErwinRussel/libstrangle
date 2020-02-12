@@ -24,11 +24,12 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 #include "libstrangle.h"
 #include "limiter.h"
 #include "config.h"
-#include "gl.h"
 
 #include <stddef.h>
 #include <dlfcn.h>
 #include <stdbool.h>
+
+#include <GL/gl.h>
 
 EXPORT
 unsigned int eglSwapBuffers( void* dpy, void* drawable ) {
