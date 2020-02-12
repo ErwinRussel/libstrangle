@@ -32,17 +32,18 @@ You can use this with Steam by right-clicking on a game in your library and sele
 ### Options
 Strangle can be controlled with environment variables.
 
-| ENV VAR                               | Value | Explanation |
-| ---                                   | ---   | ---:        |
-| STRANGLE_FPS                          | &lt;decimal&gt; | Maximum framerate. 0 to disable. Any positive value to enable |
-| STRANGLE_VSYNC                        | &lt;int&gt;  | See the above section on v-sync |
-| STRANGLE_GLFINISH                     | 0 or 1 | Forces glFinish() to run after every frame |
-| STRANGLE_PICMIP                       | -16 to 16 | Mip-map LoD bias. Negative values will increase texture sharpness (and aliasing). Positive values will increase texture blurriness |
-| STRANGLE_AF                           | 1 to 16 | Anisotropic filtering level. Improves sharpness of textures viewed at an angle |
-| STRANGLE_RETRO                        | 0 or 1 | Disables linear texture filtering. Makes textures look blocky. |
-| STRANGLE_NODLSYM                      | 0 or 1 | Disables the hooking of dlsym |
-| STRANGLE_VKONLY                       | 0 or 1 | Stops strangle's OpenGL libs from loading |
-| ENABLE_VK_LAYER_TORKEL104_libstrangle | 0 or 1 | Enables the implicit Vulkan layer |
+| ENV VAR                                | Value | Explanation |
+| ---                                    | ---   | ---:        |
+| STRANGLE_FPS                           | &lt;decimal&gt; | Maximum framerate. 0 to disable. Any positive value to enable |
+| STRANGLE_VSYNC                         | &lt;int&gt;  | See the above section on v-sync |
+| STRANGLE_GLFINISH                      | 0 or 1 | Forces glFinish() to run after every frame (OpenGL only) |
+| STRANGLE_PICMIP                        | -16 to 16 | Mip-map LoD bias. Negative values will increase texture sharpness (and aliasing). Positive values will increase texture blurriness |
+| STRANGLE_AF                            | 1 to 16 | Anisotropic filtering level. Improves sharpness of textures viewed at an angle (Vulkan only) |
+| STRANGLE_TRILINEAR                     | 0 or 1 | Force trilinear filtering (Vulkan only) |
+| STRANGLE_RETRO                         | 0 or 1 | Disables linear texture filtering. Makes textures look blocky. (Vulkan only) |
+| STRANGLE_NODLSYM                       | 0 or 1 | Disables the hooking of dlsym |
+| STRANGLE_VKONLY                        | 0 or 1 | Stops strangle's OpenGL libs from loading |
+| ENABLE_VK_LAYER_TORKEL104_libstrangle  | 0 or 1 | Enables the implicit Vulkan layer |
 | DISABLE_VK_LAYER_TORKEL104_libstrangle | 0 or 1 | Disables the implicit Vulkan layer |
 ### Experimental stuff
 ![Mip map lod bias example](screenshots/picmip_quake.png)*vkQuake with `STRANGLE_PICMIP=1337`*

@@ -71,6 +71,7 @@ StrangleConfig strangle_createConfig() {
 	config.retro      = NULL;
 	config.anisotropy = NULL;
 	config.mipLodBias = NULL;
+	config.trilinear  = NULL;
 
 	if (( env = getenv( "STRANGLE_FPS" ))) {
 		double tmp = strtod( env, NULL );
@@ -97,6 +98,10 @@ StrangleConfig strangle_createConfig() {
 
 	if (( env = getenv( "STRANGLE_RETRO" ))) {
 		config.retro = strangle_strtoi( env );
+	}
+
+	if (( env = getenv( "STRANGLE_TRILINEAR" ))) {
+		config.trilinear = strangle_strtoi( env );
 	}
 
 	return config;

@@ -26,6 +26,7 @@ typedef struct {
 	int*       retro;
 	float*     anisotropy;
 	float*     mipLodBias;
+	int*       trilinear;
 } StrangleConfig;
 
 // char *getenv_array( int count, const char** );
