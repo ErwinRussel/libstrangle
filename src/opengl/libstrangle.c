@@ -48,7 +48,7 @@ void* getStrangleFunc( const char *symbol ) {
 	// kill me
 
     if ( !strcmp( symbol, "dlsym" ) ) {
-		return dlsym;
+		return real_dlsym;
 
 	} else if ( !strcmp( symbol, "eglSwapBuffers" ) ) {
 		return (void*)eglSwapBuffers;
