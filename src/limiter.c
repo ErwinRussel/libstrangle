@@ -24,6 +24,32 @@
 #include "limiter.h"
 
 #include <time.h>
+#include <string.h>
+
+static TimeArray *overhead_times = NULL;
+
+TimeArray* TimeArray_new(size_t size) {
+	TimeArray *self = (TimeArray*) calloc(1, sizeof(TimeArray));
+	memcpy(
+		(void *) &self->size,
+		&size,
+		sizeof(size_t)
+	);
+	self->items = (nanotime_t*) calloc(size, sizeof(nanotime_t));
+
+	return self;
+}
+
+void TimeArray_add(TimeArray *self, nanotime_t item) {
+	self->sum -= self->items[self->pos];
+	self->sum += item;
+	self->items[self->pos] = item;
+	self->pos = (self->pos + 1) % self->size;
+}
+
+nanotime_t TimeArray_average(const TimeArray *self) {
+	return self->sum / self->size;
+}
 
 struct timespec nanotimeToTimespec( nanotime_t time ) {
 	struct timespec ts;
@@ -61,9 +87,14 @@ int strangle_nanosleep( nanotime_t sleepTime ) {
 	return nanosleep( &ts, NULL );
 }
 
+__attribute__ ((constructor))
+void strangle_limiter_init() {
+	overhead_times = TimeArray_new(4);
+}
+
 void limiter( long targetFrameTime ) {
 	static nanotime_t oldTime = 0,
-	overhead = 0;
+	                  overhead = 0;
 
 	if ( targetFrameTime <= 0 ) {
 		return;
@@ -71,10 +102,11 @@ void limiter( long targetFrameTime ) {
 
 	nanotime_t start = getNanoTime();
 	nanotime_t sleepTime = getSleepTime( oldTime, targetFrameTime );
+	overhead = TimeArray_average(overhead_times);
 	if ( sleepTime > overhead ) {
 		nanotime_t adjustedSleepTime = sleepTime - overhead;
 		strangle_nanosleep( adjustedSleepTime );
-		overhead = (getElapsedTime( start ) - adjustedSleepTime + overhead * 99) / 100;
+		TimeArray_add(overhead_times, getElapsedTime( start ) - adjustedSleepTime);
 	}
 
 	oldTime = getNanoTime();

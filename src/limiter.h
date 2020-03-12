@@ -22,8 +22,16 @@
 #define ONE_BILLION 1000000000 // yeah I know, haha
 
 #include <stdint.h>
+#include <stdlib.h>
 
 typedef int64_t nanotime_t;
+
+typedef struct {
+	const size_t size;
+	size_t       pos;
+	nanotime_t   sum;
+	nanotime_t*  items;
+} TimeArray;
 
 void limiter( long targetFrameTime );
 
