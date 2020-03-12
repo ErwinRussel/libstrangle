@@ -37,7 +37,7 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 static StrangleConfig config;
 
 __attribute__ ((constructor))
-void init() {
+void strangle_init() {
 // 	extern const char* __progname;
 
 	config = strangle_createConfig();
