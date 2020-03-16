@@ -27,17 +27,19 @@
 #include <assert.h>
 
 #include <mutex>
+#include <map>
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_layer.h>
 #include <vulkan/vk_util.h>
 #include "vk_enum_to_str.h"
 
-#include "mesa/util/hash_table.h"
 #include "mesa/util/ralloc.h"
 
 #include "config.h"
 #include "limiter.h"
+
+typedef void* hkey_t;
 
 static StrangleConfig config;
 std::mutex mutex_lock;
@@ -79,36 +81,27 @@ struct queue_data {
 	VkFence queries_fence;
 };
 
-static struct hash_table_u64 *vk_object_to_data = NULL;
+std::map<hkey_t, void*> vk_object_to_data;
 
-static inline void ensure_vk_object_map(void)
-{
-	if (!vk_object_to_data)
-		vk_object_to_data = _mesa_hash_table_u64_create(NULL);
-}
-
-#define HKEY(obj) ((uint64_t)(obj))
+#define HKEY(obj) ((hkey_t)(obj))
 #define FIND(type, obj) ((type *)find_object_data(HKEY(obj)))
 
-static void *find_object_data(uint64_t obj)
+static void *find_object_data(hkey_t obj)
 {
 	std::scoped_lock lock(mutex_lock);
-	ensure_vk_object_map();
-	void *data = _mesa_hash_table_u64_search(vk_object_to_data, obj);
-	return data;
+	return vk_object_to_data[obj];
 }
 
-static void map_object(uint64_t obj, void *data)
+static void map_object(hkey_t obj, void *data)
 {
 	std::scoped_lock lock(mutex_lock);
-	ensure_vk_object_map();
-	_mesa_hash_table_u64_insert(vk_object_to_data, obj, data);
+	vk_object_to_data[obj] = data;
 }
 
-static void unmap_object(uint64_t obj)
+static void unmap_object(hkey_t obj)
 {
 	std::scoped_lock lock(mutex_lock);
-	_mesa_hash_table_u64_remove(vk_object_to_data, obj);
+	vk_object_to_data.erase(obj);
 }
 
 /**/
