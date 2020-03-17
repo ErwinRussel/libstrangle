@@ -109,31 +109,35 @@ static void unmap_object(hkey_t obj)
 		VkResult __result = (expr); \
 		if (__result != VK_SUCCESS) { \
 			fprintf(stderr, "'%s' line %i failed with %s\n", \
-					  #expr, __LINE__, vk_Result_to_str(__result)); \
+			#expr, __LINE__, vk_Result_to_str(__result)); \
 		} \
 	} while (0)
 
 /**/
 
-static VkLayerInstanceCreateInfo *get_instance_chain_info(const VkInstanceCreateInfo *pCreateInfo,
-																			 VkLayerFunction func)
+static VkLayerInstanceCreateInfo *get_instance_chain_info(
+	const VkInstanceCreateInfo *pCreateInfo,
+	VkLayerFunction            func)
 {
 	vk_foreach_struct(item, pCreateInfo->pNext) {
 		if (item->sType == VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO &&
-			 ((VkLayerInstanceCreateInfo *) item)->function == func)
+			 ((VkLayerInstanceCreateInfo *) item)->function == func) {
 			return (VkLayerInstanceCreateInfo *) item;
+		}
 	}
 	unreachable("instance chain info not found");
 	return NULL;
 }
 
-static VkLayerDeviceCreateInfo *get_device_chain_info(const VkDeviceCreateInfo *pCreateInfo,
-																		VkLayerFunction func)
+static VkLayerDeviceCreateInfo *get_device_chain_info(
+	const VkDeviceCreateInfo *pCreateInfo,
+	VkLayerFunction          func)
 {
 	vk_foreach_struct(item, pCreateInfo->pNext) {
 		if (item->sType == VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO &&
-			 ((VkLayerDeviceCreateInfo *) item)->function == func)
+			 ((VkLayerDeviceCreateInfo *) item)->function == func) {
 			return (VkLayerDeviceCreateInfo *)item;
+		}
 	}
 	unreachable("device chain info not found");
 	return NULL;
@@ -153,18 +157,23 @@ static void destroy_instance_data(struct instance_data *data)
 	delete data;
 }
 
-static void instance_data_map_physical_devices(struct instance_data *instance_data,
-															  bool map)
+static void instance_data_map_physical_devices(
+	struct instance_data *instance_data,
+	bool                 map)
 {
 	uint32_t physicalDeviceCount = 0;
-	instance_data->vtable.EnumeratePhysicalDevices(instance_data->instance,
-																  &physicalDeviceCount,
-																  NULL);
+	instance_data->vtable.EnumeratePhysicalDevices(
+		instance_data->instance,
+		&physicalDeviceCount,
+		NULL
+	);
 
 	auto physicalDevices = new VkPhysicalDevice[physicalDeviceCount];
-	instance_data->vtable.EnumeratePhysicalDevices(instance_data->instance,
-																  &physicalDeviceCount,
-																  physicalDevices);
+	instance_data->vtable.EnumeratePhysicalDevices(
+		instance_data->instance,
+		&physicalDeviceCount,
+		physicalDevices
+	);
 
 	for (uint32_t i = 0; i < physicalDeviceCount; i++) {
 		if (map)
@@ -177,7 +186,9 @@ static void instance_data_map_physical_devices(struct instance_data *instance_da
 }
 
 /**/
-static struct device_data *new_device_data(VkDevice device, struct instance_data *instance)
+static struct device_data *new_device_data(
+	VkDevice             device,
+	struct instance_data *instance)
 {
 	auto data = new device_data();
 	data->instance = instance;
@@ -186,10 +197,11 @@ static struct device_data *new_device_data(VkDevice device, struct instance_data
 	return data;
 }
 
-static struct queue_data *new_queue_data(VkQueue queue,
-													  const VkQueueFamilyProperties *family_props,
-													  uint32_t family_index,
-													  struct device_data *device_data)
+static struct queue_data *new_queue_data(
+	VkQueue                       queue,
+	const VkQueueFamilyProperties *family_props,
+	uint32_t family_index,
+	struct device_data *device_data)
 {
 	auto data = new queue_data();
 	data->device = device_data;
@@ -203,10 +215,12 @@ static struct queue_data *new_queue_data(VkQueue queue,
 	VkFenceCreateInfo fence_info = {};
 	fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-	VK_CHECK(device_data->vtable.CreateFence(device_data->device,
-														  &fence_info,
-														  NULL,
-														  &data->queries_fence));
+	VK_CHECK(device_data->vtable.CreateFence(
+		device_data->device,
+		&fence_info,
+		NULL,
+		&data->queries_fence
+	));
 
 	return data;
 }
@@ -226,36 +240,49 @@ static void destroy_device_data(struct device_data *data)
 }
 
 
-static void device_map_queues(struct device_data *data,
-							  const VkDeviceCreateInfo *pCreateInfo)
+static void device_map_queues(
+	struct device_data       *data,
+	const VkDeviceCreateInfo *pCreateInfo)
 {
-	for (uint32_t i = 0; i < pCreateInfo->queueCreateInfoCount; i++)
+	for (uint32_t i = 0; i < pCreateInfo->queueCreateInfoCount; i++) {
 		data->n_queues += pCreateInfo->pQueueCreateInfos[i].queueCount;
+	}
 	data->queues = new queue_data*[data->n_queues];
 
 	struct instance_data *instance_data = data->instance;
 	uint32_t n_family_props;
-	instance_data->vtable.GetPhysicalDeviceQueueFamilyProperties(data->physical_device,
-																 &n_family_props,
-															  NULL);
+	instance_data->vtable.GetPhysicalDeviceQueueFamilyProperties(
+		data->physical_device,
+		&n_family_props,
+		NULL
+	);
 	auto family_props = new VkQueueFamilyProperties[n_family_props];
-	instance_data->vtable.GetPhysicalDeviceQueueFamilyProperties(data->physical_device,
-																 &n_family_props,
-															  family_props);
+	instance_data->vtable.GetPhysicalDeviceQueueFamilyProperties(
+		data->physical_device,
+		&n_family_props,
+		family_props
+	);
 
 	uint32_t queue_index = 0;
 	for (uint32_t i = 0; i < pCreateInfo->queueCreateInfoCount; i++) {
 		for (uint32_t j = 0; j < pCreateInfo->pQueueCreateInfos[i].queueCount; j++) {
 			VkQueue queue;
-			data->vtable.GetDeviceQueue(data->device,
-										pCreateInfo->pQueueCreateInfos[i].queueFamilyIndex,
-							   j, &queue);
+			data->vtable.GetDeviceQueue(
+				data->device,
+				pCreateInfo->pQueueCreateInfos[i].queueFamilyIndex,
+				j,
+				&queue
+			);
 
 			VK_CHECK(data->set_device_loader_data(data->device, queue));
 
 			data->queues[queue_index++] =
-			new_queue_data(queue, &family_props[pCreateInfo->pQueueCreateInfos[i].queueFamilyIndex],
-						   pCreateInfo->pQueueCreateInfos[i].queueFamilyIndex, data);
+			new_queue_data(
+				queue,
+				&family_props[pCreateInfo->pQueueCreateInfos[i].queueFamilyIndex],
+				pCreateInfo->pQueueCreateInfos[i].queueFamilyIndex,
+				data
+			);
 		}
 	}
 
@@ -269,8 +296,8 @@ static void device_unmap_queues(struct device_data *data)
 }
 
 static VkResult overlay_QueuePresentKHR(
-	 VkQueue												 queue,
-	 const VkPresentInfoKHR*							pPresentInfo)
+	 VkQueue                 queue,
+	 const VkPresentInfoKHR* pPresentInfo)
 {
 	struct queue_data *queue_data = FIND(struct queue_data, queue);
 
@@ -282,10 +309,10 @@ static VkResult overlay_QueuePresentKHR(
 
 
 static VkResult overlay_CreateDevice(
-	 VkPhysicalDevice									 physicalDevice,
-	 const VkDeviceCreateInfo*						 pCreateInfo,
-	 const VkAllocationCallbacks*					 pAllocator,
-	 VkDevice*											  pDevice)
+	 VkPhysicalDevice             physicalDevice,
+	 const VkDeviceCreateInfo*    pCreateInfo,
+	 const VkAllocationCallbacks* pAllocator,
+	 VkDevice*                    pDevice)
 {
 	struct instance_data *instance_data =
 		FIND(struct instance_data, physicalDevice);
@@ -293,9 +320,12 @@ static VkResult overlay_CreateDevice(
 		get_device_chain_info(pCreateInfo, VK_LAYER_LINK_INFO);
 
 	assert(chain_info->u.pLayerInfo);
-	PFN_vkGetInstanceProcAddr fpGetInstanceProcAddr = chain_info->u.pLayerInfo->pfnNextGetInstanceProcAddr;
-	PFN_vkGetDeviceProcAddr fpGetDeviceProcAddr = chain_info->u.pLayerInfo->pfnNextGetDeviceProcAddr;
-	PFN_vkCreateDevice fpCreateDevice = (PFN_vkCreateDevice)fpGetInstanceProcAddr(NULL, "vkCreateDevice");
+	PFN_vkGetInstanceProcAddr fpGetInstanceProcAddr =
+		chain_info->u.pLayerInfo->pfnNextGetInstanceProcAddr;
+	PFN_vkGetDeviceProcAddr fpGetDeviceProcAddr =
+		chain_info->u.pLayerInfo->pfnNextGetDeviceProcAddr;
+	PFN_vkCreateDevice fpCreateDevice =
+		(PFN_vkCreateDevice)fpGetInstanceProcAddr(NULL, "vkCreateDevice");
 	if (fpCreateDevice == NULL) {
 		return VK_ERROR_INITIALIZATION_FAILED;
 	}
@@ -306,20 +336,25 @@ static VkResult overlay_CreateDevice(
 	VkPhysicalDeviceFeatures device_features = {};
 	VkDeviceCreateInfo device_info = *pCreateInfo;
 
-	if (pCreateInfo->pEnabledFeatures)
+	if (pCreateInfo->pEnabledFeatures) {
 		device_features = *(pCreateInfo->pEnabledFeatures);
+	}
 	device_info.pEnabledFeatures = &device_features;
 
 
 	VkResult result = fpCreateDevice(physicalDevice, &device_info, pAllocator, pDevice);
-	if (result != VK_SUCCESS) return result;
+	if (result != VK_SUCCESS) {
+		return result;
+	}
 
 	struct device_data *device_data = new_device_data(*pDevice, instance_data);
 	device_data->physical_device = physicalDevice;
 	vk_load_device_commands(*pDevice, fpGetDeviceProcAddr, &device_data->vtable);
 
-	instance_data->vtable.GetPhysicalDeviceProperties(device_data->physical_device,
-																	  &device_data->properties);
+	instance_data->vtable.GetPhysicalDeviceProperties(
+		device_data->physical_device,
+		&device_data->properties
+	);
 
 	VkLayerDeviceCreateInfo *load_data_info =
 		get_device_chain_info(pCreateInfo, VK_LOADER_DATA_CALLBACK);
@@ -331,8 +366,8 @@ static VkResult overlay_CreateDevice(
 }
 
 static void overlay_DestroyDevice(
-	 VkDevice												device,
-	 const VkAllocationCallbacks*					 pAllocator)
+	 VkDevice                     device,
+	 const VkAllocationCallbacks* pAllocator)
 {
 	struct device_data *device_data = FIND(struct device_data, device);
 	device_unmap_queues(device_data);
@@ -341,9 +376,9 @@ static void overlay_DestroyDevice(
 }
 
 static VkResult overlay_CreateInstance(
-	 const VkInstanceCreateInfo*					  pCreateInfo,
-	 const VkAllocationCallbacks*					 pAllocator,
-	 VkInstance*											pInstance)
+	 const VkInstanceCreateInfo*  pCreateInfo,
+	 const VkAllocationCallbacks* pAllocator,
+	 VkInstance*                  pInstance)
 {
 	VkLayerInstanceCreateInfo *chain_info =
 		get_instance_chain_info(pCreateInfo, VK_LAYER_LINK_INFO);
@@ -364,9 +399,11 @@ static VkResult overlay_CreateInstance(
 	if (result != VK_SUCCESS) return result;
 
 	struct instance_data *instance_data = new_instance_data(*pInstance);
-	vk_load_instance_commands(instance_data->instance,
-									  fpGetInstanceProcAddr,
-									  &instance_data->vtable);
+	vk_load_instance_commands(
+		instance_data->instance,
+		fpGetInstanceProcAddr,
+		&instance_data->vtable
+	);
 	instance_data_map_physical_devices(instance_data, true);
 
 	config = strangle_createConfig();
@@ -375,7 +412,7 @@ static VkResult overlay_CreateInstance(
 }
 
 static void overlay_DestroyInstance(
-	 VkInstance instance,
+	 VkInstance                   instance,
 	 const VkAllocationCallbacks* pAllocator)
 {
 	struct instance_data *instance_data = FIND(struct instance_data, instance);
@@ -385,10 +422,10 @@ static void overlay_DestroyInstance(
 }
 
 static VkResult overlay_CreateSwapchainKHR(
-	VkDevice                                    device,
-	const VkSwapchainCreateInfoKHR*             pCreateInfo,
-	const VkAllocationCallbacks*                pAllocator,
-	VkSwapchainKHR*                             pSwapchain)
+	VkDevice                        device,
+	const VkSwapchainCreateInfoKHR* pCreateInfo,
+	const VkAllocationCallbacks*    pAllocator,
+	VkSwapchainKHR*                 pSwapchain)
 {
 	VkSwapchainCreateInfoKHR* newPCreateInfo = (VkSwapchainCreateInfoKHR*)pCreateInfo;
 	if ( config.vsync != NULL && *config.vsync >= 0 && *config.vsync <= 3) {
@@ -396,9 +433,16 @@ static VkResult overlay_CreateSwapchainKHR(
 	}
 
 	struct device_data *device_data = FIND(struct device_data, device);
-	VkResult result = device_data->vtable.CreateSwapchainKHR(device, pCreateInfo, pAllocator, pSwapchain);
+	VkResult result = device_data->vtable.CreateSwapchainKHR(
+		device,
+		pCreateInfo,
+		pAllocator,
+		pSwapchain
+	);
 
-	if (result != VK_SUCCESS) return result;
+	if (result != VK_SUCCESS) {
+		return result;
+	}
 
 	return result;
 }
@@ -433,7 +477,9 @@ static VkResult overlay_CreateSampler(
 	struct device_data *device_data = FIND(struct device_data, device);
 	VkResult result = device_data->vtable.CreateSampler(device, newPCreateInfo, pAllocator, pSampler);
 
-	if (result != VK_SUCCESS) return result;
+	if (result != VK_SUCCESS) {
+		return result;
+	}
 
 	return result;
 }
@@ -461,8 +507,9 @@ static const struct {
 static void *find_ptr(const char *name)
 {
 	for (uint32_t i = 0; i < ARRAY_SIZE(name_to_funcptr_map); i++) {
-		if (strcmp(name, name_to_funcptr_map[i].name) == 0)
+		if (strcmp(name, name_to_funcptr_map[i].name) == 0) {
 			return name_to_funcptr_map[i].ptr;
+		}
 	}
 
 	return NULL;
@@ -473,12 +520,18 @@ VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(
 	const char *funcName)
 {
 	void *ptr = find_ptr(funcName);
-	if (ptr) return reinterpret_cast<PFN_vkVoidFunction>(ptr);
+	if (ptr) {
+		return reinterpret_cast<PFN_vkVoidFunction>(ptr);
+	}
 
-	if (dev == NULL) return NULL;
+	if (dev == NULL) {
+		return NULL;
+	}
 
 	struct device_data *device_data = FIND(struct device_data, dev);
-	if (device_data->vtable.GetDeviceProcAddr == NULL) return NULL;
+	if (device_data->vtable.GetDeviceProcAddr == NULL) {
+		return NULL;
+	}
 	return device_data->vtable.GetDeviceProcAddr(dev, funcName);
 }
 
@@ -487,11 +540,17 @@ VK_LAYER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(
 	const char *funcName)
 {
 	void *ptr = find_ptr(funcName);
-	if (ptr) return reinterpret_cast<PFN_vkVoidFunction>(ptr);
+	if (ptr) {
+		return reinterpret_cast<PFN_vkVoidFunction>(ptr);
+	}
 
-	if (instance == NULL) return NULL;
+	if (instance == NULL) {
+		return NULL;
+	}
 
 	struct instance_data *instance_data = FIND(struct instance_data, instance);
-	if (instance_data->vtable.GetInstanceProcAddr == NULL) return NULL;
+	if (instance_data->vtable.GetInstanceProcAddr == NULL) {
+		return NULL;
+	}
 	return instance_data->vtable.GetInstanceProcAddr(instance, funcName);
 }
