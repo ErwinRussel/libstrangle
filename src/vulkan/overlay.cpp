@@ -34,6 +34,8 @@
 #include <vulkan/vk_util.h>
 #include "vk_enum_to_str.h"
 
+#include "mesa/util/macros.h"
+
 #include "config.h"
 #include "limiter.h"
 

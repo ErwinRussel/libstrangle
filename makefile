@@ -24,9 +24,7 @@ LDXXLIBS=-lrt
 VK_SOURCES=\
 	$(COMMON_SOURCES) \
 	$(wildcard $(SOURCEDIR)/vulkan/*.c) \
-	$(wildcard $(SOURCEDIR)/vulkan/*.cpp) \
-	$(wildcard include/mesa/util/*.c) \
-	$(wildcard include/mesa/main/*.c)
+	$(wildcard $(SOURCEDIR)/vulkan/*.cpp)
 
 .PHONY: all 32-bit 64-bit native ld clean uninstall install install-32 install-64 install-ld install-common install-native
 
