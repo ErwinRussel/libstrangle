@@ -10,6 +10,17 @@ if [ "$STRANGLE_NODLSYM" = "1" ]; then
 	STRANGLE_LIB_NAME="libstrangle_nodlsym.so"
 fi
 
+if [ -n "$STRANGLE_AF" ]; then
+	# AMD
+	export AMD_TEX_ANISO="$STRANGLE_AF"
+	export R600_TEX_ANISO="$STRANGLE_AF"
+	export RADV_TEX_ANISO="$STRANGLE_AF"
+
+	# Nvidia
+	# http://us.download.nvidia.com/XFree86/Linux-x86_64/440.64/README/openglenvvariables.html
+	export __GL_LOG_MAX_ANISO=$(echo $STRANGLE_AF | awk '{printf "%d", log($1)/log(2)}')
+fi
+
 if [ "$#" -eq 0 ]; then
 	programname=`basename "$0"`
 	echo "ERROR: No program supplied"
