@@ -34,8 +34,6 @@
 #include <vulkan/vk_util.h>
 #include "vk_enum_to_str.h"
 
-#include "mesa/util/ralloc.h"
-
 #include "config.h"
 #include "limiter.h"
 
@@ -143,7 +141,7 @@ static VkLayerDeviceCreateInfo *get_device_chain_info(const VkDeviceCreateInfo *
 
 static struct instance_data *new_instance_data(VkInstance instance)
 {
-	struct instance_data *data = rzalloc(NULL, struct instance_data);
+	auto data = new instance_data();
 	data->instance = instance;
 	map_object(HKEY(data->instance), data);
 	return data;
@@ -152,7 +150,7 @@ static struct instance_data *new_instance_data(VkInstance instance)
 static void destroy_instance_data(struct instance_data *data)
 {
 	unmap_object(HKEY(data->instance));
-	ralloc_free(data);
+	delete data;
 }
 
 static void instance_data_map_physical_devices(struct instance_data *instance_data,
@@ -163,7 +161,7 @@ static void instance_data_map_physical_devices(struct instance_data *instance_da
 																  &physicalDeviceCount,
 																  NULL);
 
-	VkPhysicalDevice *physicalDevices = (VkPhysicalDevice *) malloc(sizeof(VkPhysicalDevice) * physicalDeviceCount);
+	auto physicalDevices = new VkPhysicalDevice[physicalDeviceCount];
 	instance_data->vtable.EnumeratePhysicalDevices(instance_data->instance,
 																  &physicalDeviceCount,
 																  physicalDevices);
@@ -175,13 +173,13 @@ static void instance_data_map_physical_devices(struct instance_data *instance_da
 			unmap_object(HKEY(physicalDevices[i]));
 	}
 
-	free(physicalDevices);
+	delete physicalDevices;
 }
 
 /**/
 static struct device_data *new_device_data(VkDevice device, struct instance_data *instance)
 {
-	struct device_data *data = rzalloc(NULL, struct device_data);
+	auto data = new device_data();
 	data->instance = instance;
 	data->device = device;
 	map_object(HKEY(data->device), data);
@@ -193,7 +191,7 @@ static struct queue_data *new_queue_data(VkQueue queue,
 													  uint32_t family_index,
 													  struct device_data *device_data)
 {
-	struct queue_data *data = rzalloc(device_data, struct queue_data);
+	auto data = new queue_data();
 	data->device = device_data;
 	data->queue = queue;
 	data->flags = family_props->queueFlags;
@@ -218,13 +216,13 @@ static void destroy_queue(struct queue_data *data)
 	struct device_data *device_data = data->device;
 	device_data->vtable.DestroyFence(device_data->device, data->queries_fence, NULL);
 	unmap_object(HKEY(data->queue));
-	ralloc_free(data);
+	delete data;
 }
 
 static void destroy_device_data(struct device_data *data)
 {
 	unmap_object(HKEY(data->device));
-	ralloc_free(data);
+	delete data;
 }
 
 
@@ -233,15 +231,14 @@ static void device_map_queues(struct device_data *data,
 {
 	for (uint32_t i = 0; i < pCreateInfo->queueCreateInfoCount; i++)
 		data->n_queues += pCreateInfo->pQueueCreateInfos[i].queueCount;
-	data->queues = ralloc_array(data, struct queue_data *, data->n_queues);
+	data->queues = new queue_data*[data->n_queues];
 
 	struct instance_data *instance_data = data->instance;
 	uint32_t n_family_props;
 	instance_data->vtable.GetPhysicalDeviceQueueFamilyProperties(data->physical_device,
 																 &n_family_props,
 															  NULL);
-	VkQueueFamilyProperties *family_props =
-	(VkQueueFamilyProperties *)malloc(sizeof(VkQueueFamilyProperties) * n_family_props);
+	auto family_props = new VkQueueFamilyProperties[n_family_props];
 	instance_data->vtable.GetPhysicalDeviceQueueFamilyProperties(data->physical_device,
 																 &n_family_props,
 															  family_props);
@@ -262,7 +259,7 @@ static void device_map_queues(struct device_data *data,
 		}
 	}
 
-	free(family_props);
+	delete family_props;
 }
 
 static void device_unmap_queues(struct device_data *data)
