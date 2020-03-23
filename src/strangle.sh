@@ -35,6 +35,11 @@ print_usage_info() {
 	echo "Short options may not be combined into one string."
 	echo "Options will override environment variables."
 	echo
+	echo "Some programs will crash, freeze or behave unexpectedly when dlsym is hijacked"
+	echo "If a program is exhibiting these symptoms when run with strangle try using the"
+	echo "'--no-dlsym' option. Or if the program uses the Vulkan API you can disable"
+	echo "strangle's OpenGL libs altogether with the '--vulkan-only' option."
+	echo
 	echo "Strangle home page: <https://gitlab.com/torkel104/libstrangle>"
 }
 
