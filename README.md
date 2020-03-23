@@ -57,7 +57,8 @@ STRANGLE_VSYNC=2 strangle /path/to/game
 STRANGLE_VSYNC=1 strangle 40 /path/to/game
 ```
 ### Options
-Strangle can be controlled with environment variables.
+Run `strangle --help` to see command line options.<br />
+Strangle can also be controlled with the following environment variables:
 
 | ENV VAR                                | Value | Explanation |
 | ---                                    | ---   | ---:        |
