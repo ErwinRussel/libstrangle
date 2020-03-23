@@ -27,6 +27,7 @@ Example:
 ```
 strangle 60 /path/to/game
 ```
+Run `strangle --help` for full usage info
 ### Steam
 You can use this with Steam by right-clicking on a game in your library and selecting Properties and then SET LAUNCH OPTIONS... under the General tab. In the input box type:
 `strangle <somenumber> %command%`
@@ -37,7 +38,7 @@ Example:
 strangle 60:30 /path/to/game
 ```
 ### Vsync
-Vertical sync can be controlled by setting the `STRANGLE_VSYNC` environment variable.
+Vertical sync can be controlled by setting the `STRANGLE_VSYNC` environment variable or with the `-v` or `--vsync` command line options. Beware that OpenGL and Vulkan work differently on the same values:
 
 **OpenGL**
 * -1 - Adaptive sync (unconfirmed if this actually works)
@@ -53,6 +54,7 @@ Vertical sync can be controlled by setting the `STRANGLE_VSYNC` environment vari
 
 Examples:
 ```
+strangle -v 1 /path/to/game
 STRANGLE_VSYNC=2 strangle /path/to/game
 STRANGLE_VSYNC=1 strangle 40 /path/to/game
 ```
