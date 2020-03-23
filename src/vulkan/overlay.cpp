@@ -305,7 +305,7 @@ static VkResult overlay_QueuePresentKHR(
 
 	std::scoped_lock lock(mutex_lock);
 	VkResult result = queue_data->device->vtable.QueuePresentKHR(queue, pPresentInfo);
-	limiter( config.targetFrameTime );
+	limiter( &config );
 	return result;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2020 Björn Spindel
+ * Copyright (C) 2020 Björn Spindel
  *
  * This file is part of libstrangle.
  *
@@ -19,18 +19,29 @@
 
 #pragma once
 
-typedef struct {
-	long       targetFrameTime;
-	long       targetFrameTimeBattery;
-	int*       vsync;
-	int*       glfinish;
-	int*       retro;
-	float*     anisotropy;
-	float*     mipLodBias;
-	int*       trilinear;
-} StrangleConfig;
+#include <stdbool.h>
 
-// char *getenv_array( int count, const char** );
-StrangleConfig strangle_createConfig();
-int* strangle_strtoi( const char* );
-float* strangle_strtof( const char* );
+enum PowerSupplyType {
+	PowerSupplyType_Unknown,
+	PowerSupplyType_Battery,
+	PowerSupplyType_UPS,
+	PowerSupplyType_Mains,
+	PowerSupplyType_USB
+};
+
+enum PowerSupplyStatus {
+	PowerSupplyStatus_Unknown,
+	PowerSupplyStatus_Offline,
+	PowerSupplyStatus_OnlineFixed,
+	PowerSupplyStatus_OnlineProgrammable
+};
+
+typedef struct {
+	char* path;
+	enum PowerSupplyType type;
+	enum PowerSupplyStatus status;
+} PowerSupply;
+
+int getPowerSupplies(PowerSupply**);
+bool isRunningOnBattery();
+

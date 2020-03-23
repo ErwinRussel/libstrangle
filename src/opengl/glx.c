@@ -75,7 +75,7 @@ void glXSwapBuffers( void* dpy, void* drawable ) {
 
 	// The buffer swap is called before the wait in hope that it will reduce perceived input lag
 	realFunction( dpy, drawable );
-	limiter( config->targetFrameTime );
+	limiter( config );
 }
 
 EXPORT

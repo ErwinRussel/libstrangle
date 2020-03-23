@@ -22,9 +22,12 @@
 #endif
 
 #include "limiter.h"
+#include "config.h"
+#include "util.h"
 
 #include <time.h>
 #include <string.h>
+#include <stdbool.h>
 
 static TimeArray *overhead_times = NULL;
 
@@ -92,9 +95,21 @@ void strangle_limiter_init() {
 	overhead_times = TimeArray_new(4);
 }
 
-void limiter( long targetFrameTime ) {
+void limiter( const StrangleConfig* config ) {
+	static bool onBatteryPower = false;
 	static nanotime_t oldTime = 0,
-	                  overhead = 0;
+	                  overhead = 0,
+	                  lastBatteryCheck = 0;
+
+	if ( config->targetFrameTimeBattery != config->targetFrameTime
+		&& getNanoTime() > lastBatteryCheck + 10e9 )
+	{
+		lastBatteryCheck = getNanoTime();
+		onBatteryPower = isRunningOnBattery();
+	}
+
+	nanotime_t targetFrameTime
+		= onBatteryPower ? config->targetFrameTimeBattery : config->targetFrameTime;
 
 	if ( targetFrameTime <= 0 ) {
 		return;
@@ -106,7 +121,10 @@ void limiter( long targetFrameTime ) {
 	if ( sleepTime > overhead ) {
 		nanotime_t adjustedSleepTime = sleepTime - overhead;
 		strangle_nanosleep( adjustedSleepTime );
-		TimeArray_add(overhead_times, getElapsedTime( start ) - adjustedSleepTime);
+		nanotime_t overslept = getElapsedTime( start ) - adjustedSleepTime;
+		if ( overslept < targetFrameTime ) {
+			TimeArray_add(overhead_times, overslept);
+		}
 	}
 
 	oldTime = getNanoTime();

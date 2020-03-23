@@ -30,6 +30,12 @@ strangle 60 /path/to/game
 ### Steam
 You can use this with Steam by right-clicking on a game in your library and selecting Properties and then SET LAUNCH OPTIONS... under the General tab. In the input box type:
 `strangle <somenumber> %command%`
+### Laptops
+On laptops you can specify an alternative framerate cap when running on battery power with the `STRANGLE_FPS_BATTERY` env var or by using the `<fps>:<battery_fps>` syntax with the strangle script.
+Example:
+```
+strangle 60:30 /path/to/game
+```
 ### Vsync
 Vertical sync can be controlled by setting the `STRANGLE_VSYNC` environment variable.
 
@@ -56,6 +62,7 @@ Strangle can be controlled with environment variables.
 | ENV VAR                                | Value | Explanation |
 | ---                                    | ---   | ---:        |
 | STRANGLE_FPS                           | &lt;decimal&gt; | Maximum framerate. 0 to disable. Any positive value to enable |
+| STRANGLE_FPS_BATTERY                   | &lt;decimal&gt; | Maximum framerate when running on battery power |
 | STRANGLE_VSYNC                         | &lt;int&gt;  | See the above section on v-sync |
 | STRANGLE_GLFINISH                      | 0 or 1 | Forces glFinish() to run after every frame (OpenGL only) |
 | STRANGLE_PICMIP                        | -16 to 16 | Mip-map LoD bias. Negative values will increase texture sharpness (and aliasing). Positive values will increase texture blurriness |

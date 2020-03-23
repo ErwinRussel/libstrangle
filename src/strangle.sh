@@ -1,7 +1,11 @@
 #!/bin/sh
 
-if echo $1 | grep -Eq '^[0-9]+(\.[0-9]+)?$'; then
-	FPS="$1"
+if echo $1 | grep -Pq '^\d+(\.\d+)?$'; then
+	export STRANGLE_FPS="$1"
+	shift
+elif echo $1 | grep -Pq '^\d+(\.\d+)?:\d+(\.\d+)?$'; then
+	export STRANGLE_FPS="$(echo $1 | cut -d':' -f1)"
+	export STRANGLE_FPS_BATTERY="$(echo $1 | cut -d':' -f2)"
 	shift
 fi
 
@@ -40,4 +44,4 @@ if [ "$STRANGLE_VKONLY" != "1" ]; then
 	LD_PRELOAD="${LD_PRELOAD}:${STRANGLE_LIB_NAME}"
 fi
 
-exec env ENABLE_VK_LAYER_TORKEL104_libstrangle=1 STRANGLE_FPS="${FPS}" LD_PRELOAD="${LD_PRELOAD}" "$@"
+exec env ENABLE_VK_LAYER_TORKEL104_libstrangle=1 LD_PRELOAD="${LD_PRELOAD}" "$@"

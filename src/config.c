@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "util.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -65,6 +66,7 @@ StrangleConfig strangle_createConfig() {
 	char* env;
 
 	config.targetFrameTime = 0;
+	config.targetFrameTimeBattery = 0;
 
 	config.vsync      = NULL;
 	config.glfinish   = NULL;
@@ -77,6 +79,13 @@ StrangleConfig strangle_createConfig() {
 		double tmp = strtod( env, NULL );
 		if ( tmp ) {
 			config.targetFrameTime = 1000000000.0 / tmp;
+			config.targetFrameTimeBattery = config.targetFrameTime;
+		}
+	}
+	if (( env = getenv( "STRANGLE_FPS_BATTERY" ))) {
+		double tmp = strtod( env, NULL );
+		if ( tmp ) {
+			config.targetFrameTimeBattery = 1000000000.0 / tmp;
 		}
 	}
 

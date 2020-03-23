@@ -53,6 +53,6 @@ unsigned int eglSwapBuffers( void* dpy, void* drawable ) {
 
 	// The buffer swap is called before the wait in hope that it will reduce perceived input lag
 	ret = realFunction( dpy, drawable );
-	limiter( config->targetFrameTime );
+	limiter( config );
 	return ret;
 }

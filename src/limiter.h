@@ -24,6 +24,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <config.h>
+
 typedef int64_t nanotime_t;
 
 typedef struct {
@@ -33,5 +35,5 @@ typedef struct {
 	nanotime_t*  items;
 } TimeArray;
 
-void limiter( long targetFrameTime );
+void limiter( const StrangleConfig* );
 
