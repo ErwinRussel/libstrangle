@@ -184,7 +184,7 @@ static void instance_data_map_physical_devices(
 			unmap_object(HKEY(physicalDevices[i]));
 	}
 
-	delete physicalDevices;
+	delete[] physicalDevices;
 }
 
 /**/
@@ -288,13 +288,14 @@ static void device_map_queues(
 		}
 	}
 
-	delete family_props;
+	delete[] family_props;
 }
 
 static void device_unmap_queues(struct device_data *data)
 {
 	for (uint32_t i = 0; i < data->n_queues; i++)
 		destroy_queue(data->queues[i]);
+	delete[] data->queues;
 }
 
 static VkResult overlay_QueuePresentKHR(
