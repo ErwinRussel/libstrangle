@@ -30,7 +30,7 @@ void* real_dlsym( void* handle, const char* name )
 {
 	static void *(*the_real_dlsym)( void*, const char* );
 	if ( the_real_dlsym == NULL ) {
-		void* libdl = dlopen( "libdl.so", RTLD_NOW | RTLD_LOCAL );
+		void* libdl = dlopen( "libdl.so.2", RTLD_NOW | RTLD_LOCAL );
 		the_real_dlsym = __libc_dlsym( libdl, "dlsym" );
 	}
 
