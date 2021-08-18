@@ -88,7 +88,7 @@ install-common:
 
 install-ld: ld
 	install -m 0644 -D -T $(BUILDDIR)/libstrangle.conf $(DESTDIR)/etc/ld.so.conf.d/libstrangle.conf
-	ldconfig
+	if [ -z "$(DESTDIR)" ]; then ldconfig; fi
 
 install-32: 32-bit
 	install -m 0755 -D -T $(BUILDDIR)/libstrangle32.so $(DESTDIR)$(LIB32_PATH)/libstrangle.so
