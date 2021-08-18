@@ -30,13 +30,11 @@ install=libstrangle.install
 # shellcheck disable=SC2034
 source=("${_gitname}::git+${url}"
         'libstrangle.install'
-        '00-defer-ldconfig.patch'
         '01-fix-prefix.patch'
         )
 # shellcheck disable=SC2034
 sha256sums=('SKIP'
             'db3268bccb1444d87a5216ecbf1ead656289923e599b0a883817fe52bfd0f1e7'
-            '40ca981cebef416abaa80247bc0a11b9bbf9e71e14172b178596c540aad9394b'
             '318401eaeeba7f87a304fda8b680ff45c9bcb266df1b5ea16477730b08ea106b')
 
 pkgver() {
