@@ -21,6 +21,7 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "real_dlsym.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
 
@@ -31,7 +32,18 @@ void* real_dlsym( void* handle, const char* name )
 	static void *(*the_real_dlsym)( void*, const char* );
 	if ( the_real_dlsym == NULL ) {
 		void* libdl = dlopen( "libdl.so.2", RTLD_NOW | RTLD_LOCAL );
+
+		if ( libdl == NULL ) {
+			fprintf( stderr, "Strangle: fatal error: cannot load libdl: %s\n", dlerror() );
+			abort();
+		}
+
 		the_real_dlsym = __libc_dlsym( libdl, "dlsym" );
+
+		if ( the_real_dlsym == NULL ) {
+			fprintf( stderr, "Strangle: fatal error: cannot find real dlsym: %s\n", dlerror() );
+			abort();
+		}
 	}
 
 	return the_real_dlsym( handle, name );
