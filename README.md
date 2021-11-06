@@ -70,6 +70,7 @@ Strangle can also be controlled with the following environment variables:
 | STRANGLE_GLFINISH                      | 0 or 1 | Forces glFinish() to run after every frame (OpenGL only) |
 | STRANGLE_PICMIP                        | -16 to 16 | Mip-map LoD bias. Negative values will increase texture sharpness (and aliasing). Positive values will increase texture blurriness |
 | STRANGLE_AF                            | 1 to 16 | Anisotropic filtering level. Improves sharpness of textures viewed at an angle (Vulkan only) |
+| STRANGLE_BICUBIC                       | 0 or 1 | Force bicubic filtering (Vulkan only) |
 | STRANGLE_TRILINEAR                     | 0 or 1 | Force trilinear filtering (Vulkan only) |
 | STRANGLE_RETRO                         | 0 or 1 | Disables linear texture filtering. Makes textures look blocky. (Vulkan only) |
 | STRANGLE_NODLSYM                       | 0 or 1 | Disables the hooking of dlsym |

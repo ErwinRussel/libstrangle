@@ -470,6 +470,9 @@ static VkResult overlay_CreateSampler(
 		newPCreateInfo->magFilter = VK_FILTER_NEAREST;
 		newPCreateInfo->minFilter = VK_FILTER_NEAREST;
 		newPCreateInfo->mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	} else if ( config.cubic_filter && *config.cubic_filter == 1 ) {
+		newPCreateInfo->magFilter = VK_FILTER_CUBIC_IMG;
+		newPCreateInfo->minFilter = VK_FILTER_CUBIC_IMG;
 	}
 
 	if ( config.anisotropy != NULL && *config.anisotropy >= 1 && *config.anisotropy <= 16 ) {

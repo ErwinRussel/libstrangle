@@ -13,6 +13,7 @@ print_usage_info() {
 	echo "  -a, --aniso AF           sets the anisotropic filtering level. Makes textures"
 	echo "                             sharper at an angle. Limited OpenGL support"
 	echo "  -b, --battery-fps FPS    alternative framerate cap for when running on"
+	echo "  -c, --bicubic            force bicubic filtering. Vulkan only"
 	echo "                             battery power. See --fps"
 	echo "  -f, --fps FPS            limit the framerate to FPS."
 	echo "                             A value of 0 will disable the limiter."
@@ -61,6 +62,10 @@ while [ $# -gt 0 ]; do
 			-b|--battery-fps)
 				export STRANGLE_FPS_BATTERY="$2"
 				shift
+				shift
+				;;
+			-c|--bicubic)
+				STRANGLE_BICUBIC="1"
 				shift
 				;;
 			-f|--fps)
