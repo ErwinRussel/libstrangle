@@ -2,7 +2,7 @@ CC=gcc
 INC=-Isrc
 CFLAGS=-rdynamic -fPIC -shared -Wall -std=c99 -fvisibility=hidden $(INC)
 LDFLAGS=-Wl,-z,relro,-z,now
-LDLIBS=-ldl -lrt
+LDLIBS=-ldl -lrt -lc
 
 prefix=/usr/local
 exec_prefix=$(prefix)
