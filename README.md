@@ -20,6 +20,8 @@ mesa-common-dev
 glibc-devel-32bit
 gcc
 gcc-32bit
+gcc-c++
+gcc-c++-32bit
 ```
 ## Usage
 Cap the FPS (frames per second) of a chosen game by using the included script `strangle`
