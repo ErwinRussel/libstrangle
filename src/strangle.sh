@@ -65,7 +65,7 @@ while [ $# -gt 0 ]; do
 				shift
 				;;
 			-c|--bicubic)
-				STRANGLE_BICUBIC="1"
+				export STRANGLE_BICUBIC="1"
 				shift
 				;;
 			-f|--fps)
@@ -91,7 +91,7 @@ while [ $# -gt 0 ]; do
 				shift
 				;;
 			-t|--trilinear)
-				STRANGLE_TRILINEAR="1"
+				export STRANGLE_TRILINEAR="1"
 				shift
 				;;
 			-v|--vsync)
