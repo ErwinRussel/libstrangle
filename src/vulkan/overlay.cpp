@@ -430,15 +430,15 @@ static VkResult overlay_CreateSwapchainKHR(
 	const VkAllocationCallbacks*    pAllocator,
 	VkSwapchainKHR*                 pSwapchain)
 {
-	VkSwapchainCreateInfoKHR* newPCreateInfo = (VkSwapchainCreateInfoKHR*)pCreateInfo;
+	VkSwapchainCreateInfoKHR newPCreateInfo = *pCreateInfo;
 	if ( config.vsync != NULL && *config.vsync >= 0 && *config.vsync <= 3) {
-		newPCreateInfo->presentMode = (VkPresentModeKHR)*config.vsync;
+		newPCreateInfo.presentMode = (VkPresentModeKHR)*config.vsync;
 	}
 
 	struct device_data *device_data = FIND(struct device_data, device);
 	VkResult result = device_data->vtable.CreateSwapchainKHR(
 		device,
-		pCreateInfo,
+		&newPCreateInfo,
 		pAllocator,
 		pSwapchain
 	);
@@ -456,32 +456,33 @@ static VkResult overlay_CreateSampler(
 	const VkAllocationCallbacks* pAllocator,
 	VkSampler*                   pSampler)
 {
-	VkSamplerCreateInfo* newPCreateInfo = (VkSamplerCreateInfo*)pCreateInfo;
+	VkSamplerCreateInfo newSamplerCreateInfo = *pCreateInfo;
 
 	if ( config.mipLodBias != NULL ) {
-		newPCreateInfo->mipLodBias = *config.mipLodBias;
+		newSamplerCreateInfo.mipLodBias = *config.mipLodBias;
 	}
 
 	if ( config.trilinear != NULL && *config.trilinear == 1 ) {
-		newPCreateInfo->magFilter = VK_FILTER_LINEAR;
-		newPCreateInfo->minFilter = VK_FILTER_LINEAR;
-		newPCreateInfo->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		newSamplerCreateInfo.magFilter = VK_FILTER_LINEAR;
+		newSamplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+		newSamplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	} else if ( config.retro && *config.retro == 1 ) {
-		newPCreateInfo->magFilter = VK_FILTER_NEAREST;
-		newPCreateInfo->minFilter = VK_FILTER_NEAREST;
-		newPCreateInfo->mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		newSamplerCreateInfo.magFilter = VK_FILTER_NEAREST;
+		newSamplerCreateInfo.minFilter = VK_FILTER_NEAREST;
+		newSamplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	} else if ( config.cubic_filter && *config.cubic_filter == 1 ) {
-		newPCreateInfo->magFilter = VK_FILTER_CUBIC_IMG;
-		newPCreateInfo->minFilter = VK_FILTER_CUBIC_IMG;
+		newSamplerCreateInfo.magFilter = VK_FILTER_CUBIC_IMG;
+		newSamplerCreateInfo.minFilter = VK_FILTER_CUBIC_IMG;
+		newSamplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 	}
 
 	if ( config.anisotropy != NULL && *config.anisotropy >= 1 && *config.anisotropy <= 16 ) {
-		newPCreateInfo->anisotropyEnable = VK_TRUE;
-		newPCreateInfo->maxAnisotropy = *config.anisotropy;
+		newSamplerCreateInfo.anisotropyEnable = VK_TRUE;
+		newSamplerCreateInfo.maxAnisotropy = *config.anisotropy;
 	}
 
 	struct device_data *device_data = FIND(struct device_data, device);
-	VkResult result = device_data->vtable.CreateSampler(device, newPCreateInfo, pAllocator, pSampler);
+	VkResult result = device_data->vtable.CreateSampler(device, &newSamplerCreateInfo, pAllocator, pSampler);
 
 	if (result != VK_SUCCESS) {
 		return result;

@@ -70,6 +70,7 @@ StrangleConfig strangle_createConfig() {
 
 	config.vsync      = NULL;
 	config.glfinish   = NULL;
+	config.noError    = NULL;
 	config.retro      = NULL;
 	config.anisotropy = NULL;
 	config.mipLodBias = NULL;
@@ -116,6 +117,10 @@ StrangleConfig strangle_createConfig() {
 
 	if (( env = getenv( "STRANGLE_BICUBIC" ))) {
 		config.cubic_filter = strangle_strtoi( env );
+	}
+
+	if (( env = getenv( "STRANGLE_NO_ERROR" ))) {
+		config.noError = strangle_strtoi( env );
 	}
 
 	return config;

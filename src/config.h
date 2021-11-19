@@ -24,6 +24,7 @@ typedef struct {
 	long       targetFrameTimeBattery;
 	int*       vsync;
 	int*       glfinish;
+	int*       noError;
 	int*       retro;
 	float*     anisotropy;
 	float*     mipLodBias;

@@ -27,5 +27,7 @@ int glXSwapIntervalSGI( int );
 int glXSwapIntervalMESA( unsigned int );
 bool glXMakeCurrent( void*, void*, void* );
 
+int glXCreateContextAttribsARB( void*, int, int, bool, const int* );
+
 void* glXGetProcAddress( const unsigned char* );
 void* glXGetProcAddressARB( const unsigned char* );

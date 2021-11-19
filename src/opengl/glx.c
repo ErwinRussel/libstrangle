@@ -27,8 +27,10 @@ along with libstrangle.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <dlfcn.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <GL/gl.h>
+#include <GL/glxtokens.h>
 
 void* strangle_requireGlxFunction( const char* name ) {
 	static void *(*real_glXGetProcAddress)( const unsigned char* );
@@ -148,4 +150,61 @@ bool glXMakeCurrent( void* dpy, void* drawable, void* ctx ) {
 	bool ret = realFunction( dpy, drawable, ctx );
 	setVsync();
 	return ret;
+}
+
+EXPORT
+int glXCreateContextAttribsARB( void* dpy, int config, int share_context, bool direct, const int* attrib_list ) {
+	static int (*realFunction)( void*, int, int, bool, const int* );
+	if (realFunction == NULL) {
+		realFunction = strangle_requireGlxFunction( __func__ );
+	}
+
+	StrangleConfig *sconfig = getConfig();
+
+	if (sconfig->noError == NULL || *sconfig->noError == false) {
+		return realFunction( dpy, config, share_context, direct, attrib_list );
+	}
+
+	// Length of attrib_list in ints, excluding terminator
+	int attrib_list_length = 0;
+	// Index of GLX_CONTEXT_FLAGS_ARB *value* in attrib_list; -1 if not found
+	int context_flags_idx = -1;
+
+	// According to spec, it may be null
+	if (attrib_list) {
+		for ( ; attrib_list[attrib_list_length] != 0; attrib_list_length += 2) {
+			if (attrib_list[attrib_list_length] == GLX_CONTEXT_FLAGS_ARB) {
+				context_flags_idx = attrib_list_length + 1;
+			}
+		}
+	}
+
+	// Create our own copy of attrib_list for messing with
+	// Allocate two extra slots for writing flags if there's no slot for them
+
+	// Once again, does not include terminator
+	int attrib_list_copy_length = attrib_list_length + ((context_flags_idx == -1) ? 2 : 0);
+
+	int* attrib_list_copy = malloc( sizeof(int)*(attrib_list_copy_length + 1) );
+
+	if (!attrib_list_copy) {
+		// malloc failure, just call function with original arguments
+		return realFunction( dpy, config, share_context, direct, attrib_list );
+	}
+
+	memcpy(attrib_list_copy, attrib_list, sizeof(int)*attrib_list_length);
+	attrib_list_copy[attrib_list_copy_length+1] = 0;
+
+	if (context_flags_idx == -1) {
+		context_flags_idx = attrib_list_length + 3;
+		attrib_list_copy[attrib_list_length+2] = GLX_CONTEXT_FLAGS_ARB;
+		attrib_list_copy[context_flags_idx] = 0;
+	}
+
+	attrib_list_copy[context_flags_idx] |= GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR;
+
+	int res = realFunction( dpy, config, share_context, direct, attrib_list_copy );
+	free(attrib_list_copy);
+
+	return res;
 }
