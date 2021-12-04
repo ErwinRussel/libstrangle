@@ -67,6 +67,8 @@ void* getStrangleFunc( const char *symbol ) {
 		return (void*)glXSwapIntervalMESA;
 	} else if ( !strcmp( symbol, "glXMakeCurrent" ) ) {
 		return (void*)glXMakeCurrent;
+	} else if ( !strcmp( symbol, "glXCreateContextAttribsARB" ) ) {
+		return (void*)glXCreateContextAttribsARB;
 	}
 
 	return NULL;

@@ -22,6 +22,7 @@ print_usage_info() {
 	echo "  -p, --picmip PICMIP      set the mipmap LoD bias to PICMIP. A higher value"
 	echo "                             means blurrier textures. Can be negative"
 	echo "  -t, --trilinear          force trilinear filtering. Vulkan only"
+	echo "  -e, --no-error           force error-free context. OpenGL only"
 	echo "  -v, --vsync VSYNC        Force vertical synchronisation on or off."
 	echo "                             For OpenGL the following rules apply:"
 	echo "                               0 - Force off"
@@ -92,6 +93,10 @@ while [ $# -gt 0 ]; do
 				;;
 			-t|--trilinear)
 				export STRANGLE_TRILINEAR="1"
+				shift
+				;;
+			-e|--no-error)
+				export STRANGLE_NO_ERROR="1"
 				shift
 				;;
 			-v|--vsync)
