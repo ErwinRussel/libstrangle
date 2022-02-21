@@ -153,8 +153,8 @@ bool glXMakeCurrent( void* dpy, void* drawable, void* ctx ) {
 }
 
 EXPORT
-int glXCreateContextAttribsARB( void* dpy, int config, int share_context, bool direct, const int* attrib_list ) {
-	static int (*realFunction)( void*, int, int, bool, const int* );
+int glXCreateContextAttribsARB( void* dpy, void* config, void* share_context, bool direct, const int* attrib_list ) {
+	static int (*realFunction)( void*, void*, void*, bool, const int* );
 	if (realFunction == NULL) {
 		realFunction = strangle_requireGlxFunction( __func__ );
 	}
