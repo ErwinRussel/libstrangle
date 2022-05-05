@@ -1,86 +1,122 @@
-#include "microhttpd"
+#include <stdio.h>
+#include "../limiter.h"
 #include "promexporter.h"
+#include <unistd.h>
+
+#include "microhttpd.h"
 #include "prom.h"
-#include "promhttp"
+#include "promhttp.h"
 
 prom_gauge_t *strangle_gauge;
 
-int prom(int v, const char *label) {
-    return prom_gauge_add(foo_gauge, v, (const char *[]) { label });
+__attribute__((constructor)) void init (void);
+__attribute__((destructor)) void fini (void);
+
+struct MHD_Daemon *glob_d;
+
+const char *labels[] = { "pid", "value" };
+
+const char *cur_labels[] = {NULL, NULL};
+
+char pid_str[6];
+
+// integer gauge
+int gauge_i(int v, const char *label) {
+    cur_labels[1] = label;
+    return prom_gauge_set(strangle_gauge, v, cur_labels);
 }
 
-void prom_init(void) {
-    strangle_gauge = prom_collector_registry_must_register_metric(prom_gauge_new("strangle_gauge", "gauge for strangle", 1, (const char *[]) { "label" }));
+// long long gauge
+int gauge_ll(long long v, const char *label) {
+    cur_labels[1] = label;
+    return prom_gauge_set(strangle_gauge, v, cur_labels);
 }
 
-static void init(void) {
+// start gauge
+void gauge_init(void) {
+    int pid = getpid();
+    sprintf(pid_str, "%d", pid);
+    cur_labels[0] = pid_str;
+    strangle_gauge = prom_collector_registry_must_register_metric(prom_gauge_new("libstrangle", "Stats for libstrangle", 2, labels));
+}
+
+// Static public functions
+
+// update buffer in nanoseconds
+int update_buff_ns(nanotime_t value) {
+    int r = 0;
+    r = gauge_ll(value,  "buffer_nanoSeconds");
+    if(r) printf("PROMCLIENT: Could not update buffer_NanoSeconds gauge\n");
+    return r;
+}
+
+// update buffer in fps
+int update_buff_fps(int value){
+    int r = 0;
+    r = gauge_i(value,  "buffer_FPS");
+    if(r) printf("PROMCLIENT: Could not update buffer_FPS gauge\n");
+    return r;
+}
+
+// Frame duration / sleepTime
+int update_curr_ns(nanotime_t value){
+    int r = 0;
+    r = gauge_ll(value,  "sleepTime_nanoSeconds");
+    if(r) printf("PROMCLIENT: Could not update SleepTime_NanoSeconds gauge\n");
+    return r;
+}
+
+// Current fps
+int update_curr_fps(int value){
+    int r = 0;
+    r = gauge_i(value,  "current_FPS");
+    if(r) printf("PROMCLIENT: Could not update curr_FPS gauge\n");
+    return r;
+}
+
+// How much overhead there is in nanoseconds
+int update_overhead_ns(nanotime_t value){
+    int r = 0;
+    r = gauge_ll(value,  "overhead_nanoSeconds");
+    if(r) printf("PROMCLIENT: Could not update Overhead_NanoSeconds gauge\n");
+    return r;
+}
+
+// How much overhead in fps (achievable fps)
+int update_achievable_fps(int value){
+    int r = 0;
+    r = gauge_i(value,  "achievable_FPS");
+    if(r) printf("PROMCLIENT: Could not update achievable_FPS gauge\n");
+    return r;
+}
+
+void init(void) {
+    printf("PROMCLIENT: Loaded!\n");
     // Initialize the Default registry
     prom_collector_registry_default_init();
 
     // Register file-based metrics for each file
-    prom_init();
-
-    test_histogram = prom_collector_registry_must_register_metric(
-            prom_histogram_new(
-                    "test_histogram",
-                    "histogram under test",
-                    prom_histogram_buckets_linear(5.0, 5.0, 2),
-                    0,
-                    NULL
-            )
-    );
+    gauge_init();
 
     // Set the active registry for the HTTP handler
     promhttp_set_active_collector_registry(NULL);
-}
 
-int main(int argc, const char **argv) {
-    init();
-    int r = 0;
-    const char *labels[] = { "one", "two", "three", "four", "five" };
-    for (int i = 1; i <= 100; i++) {
-        double hist_value;
-        if (i % 2 == 0) {
-            hist_value = 3.0;
-        } else {
-            hist_value = 7.0;
-        }
+    struct MHD_Daemon *daemon = promhttp_start_daemon(MHD_USE_SELECT_INTERNALLY, 6463, NULL, NULL);
 
-        r = prom_histogram_observe(test_histogram, hist_value, NULL);
-        if (r) exit(1);
+    glob_d = daemon;
 
-        for (int x = 0; x < 5; x++) {
-            r = prom(i,  labels[x]);
-            if (r) exit(r);
-        }
-    }
-
-
-    struct MHD_Daemon *daemon = promhttp_start_daemon(MHD_USE_SELECT_INTERNALLY, 8000, NULL, NULL);
     if (daemon == NULL) {
-        return 1;
+        printf("PROMCLIENT: Daemon not found!\n");
     }
 
-    int done = 0;
-
-    auto void intHandler(int signal);
-    void intHandler(int signal) {
-        printf("\nshutting down...\n");
-        fflush(stdout);
-        prom_collector_registry_destroy(PROM_COLLECTOR_REGISTRY_DEFAULT);
-        MHD_stop_daemon(daemon);
-        done = 1;
+}
+//
+void fini() {
+    printf("PROMCLIENT: shutting down...\n");
+    fflush(stdout);
+    prom_collector_registry_destroy(PROM_COLLECTOR_REGISTRY_DEFAULT);
+    if (glob_d == NULL) {
+        printf("PROMCLIENT: Daemon not found!\n");
     }
-
-    if (argc == 2) {
-        unsigned int timeout = atoi(argv[1]);
-        sleep(timeout);
-        intHandler(0);
-        return 0;
-    }
-
-    signal(SIGINT, intHandler);
-    while(done == 0) {}
-
-    return 0;
+    MHD_stop_daemon(glob_d);
 }

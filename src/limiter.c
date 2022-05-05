@@ -28,8 +28,14 @@
 #include <time.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
+
+// include prometheus metrics;
+#include "prometheus/promexporter.h"
 
 static TimeArray *overhead_times = NULL;
+
+nanotime_t last_prom_update = 0;
 
 TimeArray* TimeArray_new(size_t size) {
 	TimeArray *self = (TimeArray*) calloc(1, sizeof(TimeArray));
@@ -126,6 +132,26 @@ void limiter( const StrangleConfig* config ) {
 			TimeArray_add(overhead_times, overslept);
 		}
 	}
+
+    if(getElapsedTime( last_prom_update ) >= 5000000000){
+        // Frame duration / sleepTime
+        update_curr_ns(sleepTime);
+        if (overhead > 0){
+            // Current fps
+            update_curr_fps((int) (1000000000 / sleepTime));
+            // update buffer in nanoseconds
+            update_buff_ns(sleepTime - overhead);
+            // How much overhead there is in nanoseconds
+            update_overhead_ns(overhead);
+            // How much overhead in fps (achievable fps)
+            update_achievable_fps((int) (1000000000 / overhead));
+            // update buffer in fps
+            update_buff_fps((int) ((1000000000 / overhead) - (1000000000 / sleepTime)));
+        }
+
+        last_prom_update = getNanoTime();
+    }
+
 
 	oldTime = getNanoTime();
 }
