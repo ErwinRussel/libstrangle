@@ -1,4 +1,4 @@
-build
+builddir
 .vscode
 .idea
 .*.swp
