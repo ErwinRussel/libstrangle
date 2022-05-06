@@ -29,7 +29,7 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-project(libprom VERSION ${Version} LANGUAGES C)
+project(libprom ../VERSION ${Version} LANGUAGES C)
 
 set(build_dir ${CMAKE_CURRENT_SOURCE_DIR}/build)
 set(public_dir ${CMAKE_CURRENT_SOURCE_DIR}/include)
