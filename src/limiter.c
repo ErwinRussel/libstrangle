@@ -30,12 +30,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-// include prometheus metrics;
-#include "prometheus/promexporter.h"
-
 static TimeArray *overhead_times = NULL;
 
 nanotime_t last_prom_update = 0;
+FILE *fp;
+char com = ',';
 
 TimeArray* TimeArray_new(size_t size) {
 	TimeArray *self = (TimeArray*) calloc(1, sizeof(TimeArray));
@@ -133,21 +132,15 @@ void limiter( const StrangleConfig* config ) {
 		}
 	}
 
-    if(getElapsedTime( last_prom_update ) >= 5000000000){
-        // Frame duration / sleepTime
-        update_curr_ns(sleepTime);
-        if (overhead > 0){
-            // Current fps
-            update_curr_fps((int) (1000000000 / sleepTime));
-            // update buffer in nanoseconds
-            update_buff_ns(sleepTime - overhead);
-            // How much overhead there is in nanoseconds
-            update_overhead_ns(overhead);
-            // How much overhead in fps (achievable fps)
-            update_achievable_fps((int) (1000000000 / overhead));
-            // update buffer in fps
-            update_buff_fps((int) ((1000000000 / overhead) - (1000000000 / sleepTime)));
-        }
+    // Update every 5 seconds
+    if(getElapsedTime( last_prom_update ) >= 1000000000){
+        fp = fopen( "./strangle.prom" , "w" );
+        fprintf(fp, "%lld", sleepTime);
+        fwrite(&com , sizeof(char) , 1, fp );
+        fprintf(fp, "%lld", overhead);
+        fwrite(&com , sizeof(char) , 1, fp );
+        fprintf(fp, "%lld", targetFrameTime);
+        fclose(fp);
 
         last_prom_update = getNanoTime();
     }

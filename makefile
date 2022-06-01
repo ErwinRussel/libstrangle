@@ -2,9 +2,7 @@ CC=gcc
 INC=-Isrc
 CFLAGS=-rdynamic -fPIC -shared -Wall -std=c99 -fvisibility=hidden $(INC)
 LDFLAGS=-Wl,-z,relro,-z,now
-PROMLIBS = -pthread -lprom -lpromhttp -lmicrohttpd
-LDLIBS=-ldl -lrt -lc $(PROMLIBS)
-PROMSL = /usr/lib/libprom.so /usr/lib/libpromhttp.so
+LDLIBS=-ldl -lrt -lc
 
 prefix=/usr/local
 exec_prefix=$(prefix)
@@ -18,13 +16,11 @@ SOURCEDIR=src
 BUILDDIR=build
 COMMON_SOURCES=$(wildcard $(SOURCEDIR)/*.c)
 GL_SOURCES=$(COMMON_SOURCES) $(wildcard $(SOURCEDIR)/opengl/*.c)
-# added prom sources
-PROM_SOURCES=$(wildcard $(SOURCEDIR)/prometheus/*.c)
 
 CXX=g++
 CXXFLAGS= -pthread -rdynamic -fPIC -shared -Wall -std=gnu++17 -fvisibility=hidden -Iinclude $(INC) -DVK_USE_PLATFORM_XLIB_KHR -DHAVE_PTHREAD -DHAVE_TIMESPEC_GET
 LDXXFLAGS=
-LDXXLIBS=-lrt $(PROMLIBS)
+LDXXLIBS=-lrt
 VK_SOURCES=\
 	$(COMMON_SOURCES) \
 	$(wildcard $(SOURCEDIR)/vulkan/*.c) \
@@ -32,8 +28,7 @@ VK_SOURCES=\
 
 .PHONY: all 32-bit 64-bit native ld clean uninstall install install-32 install-64 install-ld install-common install-native
 
-#all: 32-bit 64-bit ld
-all: 64-bit ld
+all: 32-bit 64-bit ld
 
 32-bit: \
 	$(BUILDDIR)/libstrangle32.so \
@@ -52,33 +47,7 @@ native: \
 
 ld: $(BUILDDIR)/libstrangle.conf
 
-# PROMETHEUS STUFF TO BUILD
-
-VERSION = 0.1.3
-
-PROM_DEB_PACKAGE = ./prom/libprom-dev-${VERSION}-Linux.deb
-PROM_TGZ_PACKAGE = ./prom/libprom-dev-${VERSION}-Linux.tar.gz
-
-PROMHTTP_DEB_PACKAGE = ./promhttp/libpromhttp-dev-${VERSION}-Linux.deb
-PROMHTTP_TGZ_PACKAGE = ./promhttp/libpromhttp-dev-${VERSION}-Linux.tar.gz
-
-${PROM_DEB_PACKAGE}:
-	cd . && ./auto build && ./auto package
-
-${PROMHTTP_DEB_PACKAGE}:
-	cd . && ./auto build && ./auto package
-
-/usr/lib/libprom.so: ${PROM_DEB_PACKAGE}
-	dpkg -i ${PROM_DEB_PACKAGE}
-
-/usr/lib/libpromhttp.so: ${PROMHTTP_DEB_PACKAGE}
-	dpkg -i ${PROMHTTP_DEB_PACKAGE}
-
-promlibs: /usr/lib/libprom.so /usr/lib/libpromhttp.so
-
-# END PROMETHEUS STUFF
-
-$(BUILDDIR): promlibs
+$(BUILDDIR):
 	mkdir -p $(BUILDDIR)
 
 $(BUILDDIR)/libstrangle.conf: | $(BUILDDIR)
@@ -86,31 +55,31 @@ $(BUILDDIR)/libstrangle.conf: | $(BUILDDIR)
 	@echo "$(LIB64_PATH)/" >> $(BUILDDIR)/libstrangle.conf
 
 $(BUILDDIR)/libstrangle64.so: | $(BUILDDIR)
-	$(CC) $(CFLAGS) $(LDFLAGS) -m64 -o $@ $(GL_SOURCES) $(PROM_SOURCES) $(LDLIBS) -DHOOK_DLSYM
+	$(CC) $(CFLAGS) $(LDFLAGS) -m64 -o $@ $(GL_SOURCES) $(LDLIBS) -DHOOK_DLSYM
 
 $(BUILDDIR)/libstrangle32.so: | $(BUILDDIR)
 	$(CC) $(CFLAGS) $(LDFLAGS) -m32 -o $@ $(GL_SOURCES) $(LDLIBS) -DHOOK_DLSYM
 
 $(BUILDDIR)/libstrangle64_nodlsym.so: | $(BUILDDIR)
-	$(CC) $(CFLAGS) $(LDFLAGS) -m64 -o $@ $(GL_SOURCES) $(PROM_SOURCES) $(LDLIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -m64 -o $@ $(GL_SOURCES) $(LDLIBS)
 
 $(BUILDDIR)/libstrangle32_nodlsym.so: | $(BUILDDIR)
 	$(CC) $(CFLAGS) $(LDFLAGS) -m32 -o $@ $(GL_SOURCES) $(LDLIBS)
 
 $(BUILDDIR)/libstrangle_vk64.so: | $(BUILDDIR)
-	$(CXX) $(CXXFLAGS) $(LDXXFLAGS) -m64 -o $@ $(VK_SOURCES) $(PROM_SOURCES) $(LDXXLIBS)
+	$(CXX) $(CXXFLAGS) $(LDXXFLAGS) -m64 -o $@ $(VK_SOURCES) $(LDXXLIBS)
 
 $(BUILDDIR)/libstrangle_vk32.so: | $(BUILDDIR)
 	$(CXX) $(CXXFLAGS) $(LDXXFLAGS) -m32 -o $@ $(VK_SOURCES) $(LDXXLIBS)
 
 $(BUILDDIR)/libstrangle_native.so: | $(BUILDDIR)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(GL_SOURCES) $(PROM_SOURCES) $(LDLIBS) -DHOOK_DLSYM
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(GL_SOURCES) $(LDLIBS) -DHOOK_DLSYM
 
 $(BUILDDIR)/libstrangle_native_nodlsym.so: | $(BUILDDIR)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(GL_SOURCES) $(PROM_SOURCES) $(LDLIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(GL_SOURCES) $(LDLIBS)
 
 $(BUILDDIR)/libstrangle_vk_native.so: | $(BUILDDIR)
-	$(CXX) $(CXXFLAGS) $(LDXXFLAGS) -o $@ $(VK_SOURCES) $(PROM_SOURCES) $(LDXXLIBS)
+	$(CXX) $(CXXFLAGS) $(LDXXFLAGS) -o $@ $(VK_SOURCES) $(LDXXLIBS)
 
 install-common:
 	install -m 0755 -D -T $(SOURCEDIR)/strangle.sh $(DESTDIR)$(bindir)/strangle
@@ -136,16 +105,10 @@ install-native: native
 	install -m 0755 -D -T $(BUILDDIR)/libstrangle_native_nodlsym.so $(DESTDIR)$(libdir)/libstrangle_nodlsym.so
 	install -m 0755 -D -T $(BUILDDIR)/libstrangle_vk_native.so $(DESTDIR)$(libdir)/libstrangle_vk.so
 
-#install: \
-#	all \
-#	install-common \
-#	install-32 \
-#	install-64 \
-#	install-ld
-
 install: \
 	all \
 	install-common \
+	install-32 \
 	install-64 \
 	install-ld
 
