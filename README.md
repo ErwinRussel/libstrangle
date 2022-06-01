@@ -1,5 +1,7 @@
-# libstrangle
-Frame rate limiter for Linux.
+# [WIP] libstrangle + prometheus
+Forked from Tokel104's gitlab.
+Frame rate limiter for Linux. Exposing metrics to Prometheus.
+
 ## Building
 Typically you'll use these commands to build the program
 ```
