@@ -31,6 +31,8 @@
 #include <stdio.h>
 
 static TimeArray *overhead_times = NULL;
+static TimeArray *frame_times = NULL;
+static TimeArray *sleep_times = NULL;
 
 nanotime_t last_prom_update = 0;
 FILE *fp;
@@ -98,6 +100,8 @@ int strangle_nanosleep( nanotime_t sleepTime ) {
 __attribute__ ((constructor))
 void strangle_limiter_init() {
 	overhead_times = TimeArray_new(4);
+    frame_times = TimeArray_new(4);
+    sleep_times = TimeArray_new(4);
 }
 
 void limiter( const StrangleConfig* config ) {
@@ -132,19 +136,25 @@ void limiter( const StrangleConfig* config ) {
 		}
 	}
 
-    // Update every 5 seconds
-    if(getElapsedTime( last_prom_update ) >= 1000000000){
+    nanotime_t frameTime = getNanoTime() - oldTime;
+    oldTime = getNanoTime();
+    TimeArray_add(frame_times, frameTime);
+    TimeArray_add(sleep_times, sleepTime);
+
+    // Update every 1 seconds
+    if(getElapsedTime( last_prom_update ) >= 5000000000){
         fp = fopen( "./strangle.prom" , "w" );
-        fprintf(fp, "%lld", sleepTime);
+        fprintf(fp, "%lld", TimeArray_average(sleep_times));
         fwrite(&com , sizeof(char) , 1, fp );
         fprintf(fp, "%lld", overhead);
         fwrite(&com , sizeof(char) , 1, fp );
         fprintf(fp, "%lld", targetFrameTime);
+        fwrite(&com , sizeof(char) , 1, fp );
+        fprintf(fp, "%lld", TimeArray_average(frame_times));
         fclose(fp);
-
+        // reset frametime
+        sleep_times = TimeArray_new(4);
+        frame_times = TimeArray_new(4);
         last_prom_update = getNanoTime();
     }
-
-
-	oldTime = getNanoTime();
 }
