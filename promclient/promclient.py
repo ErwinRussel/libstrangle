@@ -26,8 +26,11 @@ def process():
     g_sleep_time.set(sleep_time)
     g_overhead.set(overhead)
     g_target_frame_time.set(target_frame_time)
-    g_target_fps.set(1000000000 / target_frame_time)
     g_adjusted_sleep_time.set(sleep_time - overhead)
+
+    if(target_frame_time > 0)
+        g_target_fps.set(1000000000 / target_frame_time)
+
     if(test_time > 0):
         g_fps.set(1000000000 / test_time)
 
