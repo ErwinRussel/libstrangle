@@ -43,7 +43,7 @@ def process(sleep_time, overhead, target_frame_time, cur_frame_time):
 
     # todo: put this in a JSON and send to
     try:
-        r = requests.post('http://0.0.0.0:8001/push_metric', json=push_dict)
+        r = requests.post('http://172.17.0.1:8001/push_metric', json=push_dict)
         print(f"Status Code: {r.status_code}") # , Response: {r.json()}
     except:
         print("Could not connect to port 8001")
