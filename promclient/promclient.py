@@ -3,6 +3,7 @@ from os.path import exists
 import os
 import requests
 import socket
+import atexit
 
 file_exists = False
 # sleep_time = 0
@@ -43,12 +44,24 @@ def process(sleep_time, overhead, target_frame_time, cur_frame_time):
 
     # todo: put this in a JSON and send to
     try:
-        r = requests.post('http://172.17.0.1:8001/push_metric', json=push_dict)
+        # 172.17.0.1
+        r = requests.post('http://0.0.0.0:8001/push_metric', json=push_dict)
+        print(f"Status Code: {r.status_code}") # , Response: {r.json()}
+    except:
+        print("Could not connect to port 8001")
+
+def metric_remove():
+    push_dict = {}
+    push_dict['host_name'] = os.getenv('NODENAME')# todo: get_from_env
+    push_dict['container_name'] = socket.gethostname()
+    try:
+        r = requests.post('http://0.0.0.0:8001/delete_metric', json=push_dict)
         print(f"Status Code: {r.status_code}") # , Response: {r.json()}
     except:
         print("Could not connect to port 8001")
 
 if __name__ == '__main__':
+    atexit.register(metric_remove)
     file_exists = exists(FILE)
     while True:
         # read from file
