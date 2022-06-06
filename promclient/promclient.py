@@ -4,6 +4,7 @@ import os
 import requests
 import socket
 import atexit
+import signal
 
 file_exists = False
 # sleep_time = 0
@@ -62,6 +63,8 @@ def metric_remove():
 
 if __name__ == '__main__':
     atexit.register(metric_remove)
+    signal.signal(signal.SIGTERM, metric_remove)
+    signal.signal(signal.SIGINT, metric_remove)
     file_exists = exists(FILE)
     while True:
         # read from file
